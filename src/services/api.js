@@ -20,33 +20,29 @@ const mockProfile = {
   state: "Lagos",
   country: "Nigeria",
   nextOfKin: "Emeka Okonkwo",
+  tin: "1234567890",
   bankAccount: "0123456789",
   bankName: "Access Bank",
-  nextOfKin: "Emeka Okonkwo",
-  tin: "1234567890",
 };
 
-export async function fetchShareholderByEmail(email) {
-  // Simulate network delay
-  await delay(1000);
+export async function checkEmailExists(email) {
+  await delay(800);
+  const registeredEmails = ["adaeze@example.com", "test@test.com"];
+  return { exists: registeredEmails.includes(email) };
+}
 
-  // Inject the email into the mock profile
+export async function fetchShareholderByEmail(email) {
+  await delay(1000);
   return { ...mockProfile, email };
 }
 
 export async function submitUpdateRequest(shareholderId, formData) {
-  // Simulate network delay
   await delay(1500);
-
-  // Return a fake reference number
   return { referenceNumber: "SRP-" + Date.now().toString().slice(-8) };
 }
 
 export async function confirmDetailsCorrect(shareholderId) {
-  // Simulate network delay
   await delay(1000);
-
-  // Return a fake reference number
   return { referenceNumber: "SRC-" + Date.now().toString().slice(-8) };
 }
 
@@ -58,6 +54,11 @@ export async function confirmDetailsCorrect(shareholderId) {
 //   baseURL: import.meta.env.VITE_API_BASE_URL,
 //   headers: { 'Content-Type': 'application/json' },
 // })
+//
+// export async function checkEmailExists(email) {
+//   const { data } = await client.get('/shareholders/check-email', { params: { email } })
+//   return data
+// }
 //
 // export async function fetchShareholderByEmail(email) {
 //   const { data } = await client.get('/shareholders/lookup', { params: { email } })
