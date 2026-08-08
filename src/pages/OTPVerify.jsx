@@ -68,7 +68,7 @@ export default function OTPVerify({ email, pinId, onNext, onBack }) {
     setLoading(true);
 
     try {
-      await verifyOTP(currentPinId, otp);
+      await verifyOTP(currentPinId, otp, email);
 
       // OTP confirmed — fetch shareholder profile
       const profile = await fetchShareholderByEmail(email);

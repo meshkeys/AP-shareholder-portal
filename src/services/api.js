@@ -27,7 +27,11 @@ const mockProfile = {
 
 export async function checkEmailExists(email) {
   await delay(800);
-  const registeredEmails = ["adaeze@example.com", "test@test.com"];
+  const registeredEmails = [
+    "adaeze@example.com",
+    "test@test.com",
+    "meshkeys@gmail.com",
+  ];
   return { exists: registeredEmails.includes(email) };
 }
 

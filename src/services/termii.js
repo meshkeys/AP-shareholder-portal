@@ -1,82 +1,68 @@
 /**
- * Termii OTP Service
+ * OTP Service
  *
- * Currently using MOCK mode for development and testing.
- * When you're ready for production:
- *   1. Get your API key from https://termii.com
- *   2. Fill in your .env file
- *   3. Uncomment the real API calls below and remove the mock functions
+ * Calls our own backend (server/index.js) which sends OTP via SMTP.
+ *
+ * For development/testing without SMTP credentials,
+ * set VITE_USE_MOCK_OTP=true in your frontend .env file
+ * to fall back to the console mock.
  */
 
-// ─── MOCK (for development) ──────────────────────────────────────────────────
+const USE_MOCK = false; //import.meta.env.VITE_USE_MOCK_OTP === 'true'
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 let mockOTP = "";
 
+// ── Send OTP ──────────────────────────────────────────────────────────────────
 export async function sendOTP(email) {
-  // Simulate network delay
-  await delay(1000);
+  if (USE_MOCK) {
+    await delay(1000);
+    mockOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log(`📧 Mock OTP for ${email}: ${mockOTP}`);
+    return { pinId: "mock" };
+  }
 
-  // Generate a random 6-digit OTP
-  mockOTP = Math.floor(100000 + Math.random() * 900000).toString();
+  const res = await fetch(`${API_URL}/api/otp/send`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
 
-  // Log it to the console so you can test with it
-  console.log(`📧 OTP sent to ${email}: ${mockOTP}`);
+  const data = await res.json();
 
-  // Return a fake pinId
-  return { pinId: "mock-pin-id-123" };
+  if (!res.ok) {
+    throw new Error(data.error || "Failed to send OTP. Please try again.");
+  }
+
+  return { pinId: "sent" };
 }
 
-export async function verifyOTP(pinId, otp) {
-  // Simulate network delay
-  await delay(800);
+// ── Verify OTP ────────────────────────────────────────────────────────────────
+export async function verifyOTP(pinId, otp, email) {
+  if (USE_MOCK) {
+    await delay(800);
+    if (otp !== mockOTP) {
+      throw new Error("Incorrect code. Please try again.");
+    }
+    return true;
+  }
 
-  if (otp !== mockOTP) {
-    throw new Error("Incorrect code. Please try again.");
+  const res = await fetch(`${API_URL}/api/otp/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, otp }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || "Verification failed. Please try again.");
   }
 
   return true;
 }
 
-// ─── REAL (uncomment when ready for production) ───────────────────────────────
-
-// import axios from 'axios'
-//
-// const BASE_URL   = import.meta.env.VITE_TERMII_BASE_URL
-// const API_KEY    = import.meta.env.VITE_TERMII_API_KEY
-// const SENDER_ID  = import.meta.env.VITE_TERMII_SENDER_ID
-//
-// export async function sendOTP(email) {
-//   const { data } = await axios.post(`${BASE_URL}/sms/otp/send`, {
-//     api_key:          API_KEY,
-//     message_type:     'NUMERIC',
-//     to:               email,
-//     from:             SENDER_ID,
-//     channel:          'email',
-//     pin_attempts:     3,
-//     pin_time_to_live: 10,
-//     pin_length:       6,
-//     pin_placeholder:  '< 1234 >',
-//     message_text:     'Your ShareReg verification code is < 1234 >. It expires in 10 minutes.',
-//     pin_type:         'NUMERIC',
-//   })
-//   if (!data.pinId) throw new Error(data.message || 'Failed to send OTP.')
-//   return { pinId: data.pinId }
-// }
-//
-// export async function verifyOTP(pinId, otp) {
-//   const { data } = await axios.post(`${BASE_URL}/sms/otp/verify`, {
-//     api_key: API_KEY,
-//     pin_id:  pinId,
-//     pin:     otp,
-//   })
-//   if (data.verified !== true && data.verified !== 'True') {
-//     throw new Error(data.msg || 'Incorrect code. Please try again.')
-//   }
-//   return true
-// }
-
-// ─── Helper ───────────────────────────────────────────────────────────────────
-
+// ── Helper ────────────────────────────────────────────────────────────────────
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
