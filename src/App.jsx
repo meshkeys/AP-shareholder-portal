@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import StepBar from "./components/StepBar";
 import EmailEntry from "./pages/EmailEntry";
@@ -9,22 +9,31 @@ import NameChangeForm from "./pages/NameChangeForm";
 import KYCForm from "./pages/KYCForm";
 import AddressForm from "./pages/AddressForm";
 import SignatureForm from "./pages/SignatureForm";
-import NUBANChange from "./pages/NUBANChange";
+import NUBANChange from "./pages/NubanChange";
 import ReviewSummary from "./pages/ReviewSummary";
 import Success from "./pages/Success";
 
-/*
-  STEP MAP:
-  1 — EmailEntry
-  2 — OTPVerify
-  3 — ProfileReview       (holdings table)
-  4 — UpdateTypeSelector  (pick one)
-  5 — Form                (depends on type)
-  6 — ReviewSummary       (printable)
-  7 — Success             (ticket)
-*/
+// Admin imports
+import AdminNavbar from "./admin/components/AdminNavbar";
+import Login from "./admin/pages/Login";
+import Dashboard from "./admin/pages/Dashboard";
+import Requests from "./admin/pages/Requests";
+import RequestDetail from "./admin/pages/RequestDetail";
+import Agents from "./admin/pages/Agents";
+import Performance from "./admin/pages/Performance";
+import Reports from "./admin/pages/Reports";
+import Settings from "./admin/pages/Settings";
+import { getSession, clearSession } from "./admin/services/adminApi";
+
+const isAdminRoute = window.location.pathname.startsWith("/admin");
 
 export default function App() {
+  // ── Admin state ─────────────────────────────────────────────────────────────
+  const [adminAgent, setAdminAgent] = useState(null);
+  const [adminPage, setAdminPage] = useState("dashboard");
+  const [selectedRequestId, setSelectedRequestId] = useState(null);
+
+  // ── Portal state ─────────────────────────────────────────────────────────────
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [pinId, setPinId] = useState("");
@@ -33,50 +42,58 @@ export default function App() {
   const [submission, setSubmission] = useState(null);
   const [ticket, setTicket] = useState(null);
 
-  // ── Step 1 → 2 ────────────────────────────────────────────────────────────
+  // ── Check for existing admin session on load ──────────────────────────────
+  useEffect(() => {
+    if (isAdminRoute) {
+      const session = getSession();
+      if (session) {
+        setAdminAgent(session.agent);
+      }
+    }
+  }, []);
+
+  // ── Admin navigation ──────────────────────────────────────────────────────
+  function handleAdminNavigate(page, id = null) {
+    setAdminPage(page);
+    if (id) setSelectedRequestId(id);
+  }
+
+  // ── Portal flow ───────────────────────────────────────────────────────────
   function onEmailDone({ email, pinId }) {
     setEmail(email);
     setPinId(pinId);
     setStep(2);
   }
 
-  // ── Step 2 → 3 ────────────────────────────────────────────────────────────
   function onOTPDone({ profile }) {
     setProfile(profile);
     setStep(3);
   }
 
-  // ── Step 3 → 4 (update) ───────────────────────────────────────────────────
   function onUpdateRequested() {
     setStep(4);
   }
 
-  // ── Step 3 → 7 (confirm correct) ──────────────────────────────────────────
   function onConfirmed({ referenceNumber, type }) {
     setTicket({ referenceNumber, type, label: null });
     setStep(7);
   }
 
-  // ── Step 4 → 5 ────────────────────────────────────────────────────────────
   function onTypeSelected(category) {
     setUpdateType(category);
     setStep(5);
   }
 
-  // ── Step 5 → 6 ────────────────────────────────────────────────────────────
   function onFormDone(submissionData) {
     setSubmission(submissionData);
     setStep(6);
   }
 
-  // ── Step 6 → 7 (submit) ───────────────────────────────────────────────────
   function onReviewConfirmed() {
-    // Generate ticket reference number
     const prefix = submission.tagPrefix;
     const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
     const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
     const referenceNumber = `${prefix}-${date}-${rand}`;
-
     setTicket({
       referenceNumber,
       type: submission.updateType,
@@ -85,7 +102,6 @@ export default function App() {
     setStep(7);
   }
 
-  // ── Step 7 → 4 (update another) ───────────────────────────────────────────
   function onUpdateAnother() {
     setUpdateType(null);
     setSubmission(null);
@@ -93,9 +109,7 @@ export default function App() {
     setStep(4);
   }
 
-  // ── Step 7 → end (done) ───────────────────────────────────────────────────
   function onDone() {
-    // Reset everything and go back to start
     setStep(1);
     setEmail("");
     setPinId("");
@@ -105,16 +119,9 @@ export default function App() {
     setTicket(null);
   }
 
-  // ── Render the correct form for step 5 ────────────────────────────────────
   function renderForm() {
     if (!updateType) return null;
-
-    const props = {
-      profile,
-      onNext: onFormDone,
-      onBack: () => setStep(4),
-    };
-
+    const props = { profile, onNext: onFormDone, onBack: () => setStep(4) };
     switch (updateType.id) {
       case "nameChange":
         return <NameChangeForm {...props} />;
@@ -131,7 +138,58 @@ export default function App() {
     }
   }
 
-  // ── Main container width — wider on step 3 for the table ──────────────────
+  // ── ADMIN DASHBOARD ───────────────────────────────────────────────────────
+  if (isAdminRoute) {
+    if (!adminAgent) {
+      return <Login onLogin={(agent) => setAdminAgent(agent)} />;
+    }
+
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#f5f5f5",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <AdminNavbar
+          agent={adminAgent}
+          currentPage={adminPage}
+          onNavigate={handleAdminNavigate}
+        />
+        <div style={{ flex: 1 }}>
+          {adminPage === "dashboard" && (
+            <Dashboard agent={adminAgent} onNavigate={handleAdminNavigate} />
+          )}
+
+          {adminPage === "requests" && (
+            <Requests agent={adminAgent} onNavigate={handleAdminNavigate} />
+          )}
+
+          {adminPage === "requestDetail" && selectedRequestId && (
+            <RequestDetail
+              agent={adminAgent}
+              requestId={selectedRequestId}
+              onBack={() => setAdminPage("requests")}
+            />
+          )}
+
+          {adminPage === "performance" && (
+            <Performance agent={adminAgent} onNavigate={handleAdminNavigate} />
+          )}
+
+          {adminPage === "reports" && <Reports agent={adminAgent} />}
+
+          {adminPage === "agents" && <Agents agent={adminAgent} />}
+
+          {adminPage === "settings" && <Settings agent={adminAgent} />}
+        </div>
+      </div>
+    );
+  }
+
+  // ── SHAREHOLDER PORTAL ────────────────────────────────────────────────────
   const maxWidth = step === 3 ? "1100px" : "560px";
 
   return (
@@ -139,7 +197,6 @@ export default function App() {
       style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
     >
       <Navbar />
-
       <main
         style={{
           flex: 1,
@@ -152,10 +209,7 @@ export default function App() {
       >
         <StepBar currentStep={step > 5 ? 5 : step} />
 
-        {/* Step 1 — Email entry */}
         {step === 1 && <EmailEntry onNext={onEmailDone} />}
-
-        {/* Step 2 — OTP verify */}
         {step === 2 && (
           <OTPVerify
             email={email}
@@ -164,8 +218,6 @@ export default function App() {
             onBack={() => setStep(1)}
           />
         )}
-
-        {/* Step 3 — Profile / holdings review */}
         {step === 3 && profile && (
           <ProfileReview
             profile={profile}
@@ -173,19 +225,13 @@ export default function App() {
             onConfirm={onConfirmed}
           />
         )}
-
-        {/* Step 4 — Update type selector */}
         {step === 4 && (
           <UpdateTypeSelector
             onSelect={onTypeSelected}
             onBack={() => setStep(3)}
           />
         )}
-
-        {/* Step 5 — Update form (dynamic) */}
         {step === 5 && renderForm()}
-
-        {/* Step 6 — Review summary */}
         {step === 6 && submission && profile && (
           <ReviewSummary
             submission={submission}
@@ -194,8 +240,6 @@ export default function App() {
             onBack={() => setStep(5)}
           />
         )}
-
-        {/* Step 7 — Success */}
         {step === 7 && ticket && (
           <Success
             ticket={ticket}

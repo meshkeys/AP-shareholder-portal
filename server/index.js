@@ -6,6 +6,8 @@ const otpRoutes = require("./routes/otp");
 const authRoutes = require("./routes/auth");
 const requestRoutes = require("./routes/requests");
 const agentRoutes = require("./routes/agents");
+const escalationRoutes = require("./routes/escalations");
+const { startEscalationScheduler } = require("./utils/escalation");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -13,7 +15,7 @@ const PORT = process.env.PORT || 5000;
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "http://localhost:5173"],
   }),
 );
 app.use(express.json());
@@ -24,6 +26,7 @@ app.use("/api/otp", otpRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/agents", agentRoutes);
+app.use("/api/escalations", escalationRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => {
@@ -35,6 +38,9 @@ app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
   res.status(500).json({ error: "Something went wrong. Please try again." });
 });
+
+// ── Start escalation scheduler ────────────────────────────────────────────────
+startEscalationScheduler();
 
 // ── Start server ──────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
