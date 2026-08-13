@@ -12,6 +12,40 @@ export default function ReviewSummary({
     window.print();
   }
 
+  async function handleSubmit() {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/requests/submit`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            referenceNumber: generateReference(),
+            shareholderEmail: profile.email,
+            shareholderName: `${profile.firstName} ${profile.lastName}`,
+            requestType: submission.updateType,
+            requestSubtype: submission.subTypeLabel || null,
+            fields: submission.fields || {},
+            documents: [],
+          }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      onConfirm({ referenceNumber: data.referenceNumber });
+    } catch (err) {
+      console.error("Submission error:", err);
+      onConfirm({ referenceNumber: generateReference() });
+    }
+  }
+
+  function generateReference() {
+    const prefix = submission.tagPrefix || "REQ";
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
+    return `${prefix}-${date}-${rand}`;
+  }
+
   const submittedDate = new Date().toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "long",
@@ -211,27 +245,10 @@ export default function ReviewSummary({
             false information may result in rejection of this request.
           </p>
         </div>
-
-        {/* Signature line — for print */}
-        <div style={{ marginTop: "32px", display: "flex", gap: "40px" }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: "6px" }}>
-              <p style={{ fontSize: "11px", color: "#6b6b6b" }}>
-                Shareholder signature
-              </p>
-            </div>
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ borderTop: "1px solid #1a1a1a", paddingTop: "6px" }}>
-              <p style={{ fontSize: "11px", color: "#6b6b6b" }}>Date</p>
-            </div>
-          </div>
-        </div>
       </div>
-
       {/* Submit button — hidden on print */}
       <div className="no-print" style={{ marginTop: "16px" }}>
-        <button className="btn-primary" onClick={onConfirm}>
+        <button className="btn-primary" onClick={handleSubmit}>
           <i className="ti ti-send" style={{ fontSize: "15px" }} /> Submit this
           request
         </button>

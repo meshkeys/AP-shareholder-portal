@@ -31,6 +31,7 @@ export async function checkEmailExists(email) {
     "adaeze@example.com",
     "test@test.com",
     "meshkeys@gmail.com",
+    "nawokgotau@gmail.com",
   ];
   return { exists: registeredEmails.includes(email) };
 }

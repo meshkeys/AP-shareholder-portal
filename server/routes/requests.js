@@ -410,4 +410,61 @@ router.patch("/:id/email-toggle", authenticate, async (req, res) => {
   }
 });
 
+// ── POST /api/requests/bulk-assign ───────────────────────────────────────────
+router.post("/bulk-assign", authenticate, async (req, res) => {
+  const { requestIds, agentId } = req.body;
+  const { role, id: supervisorId, fullName: supervisorName } = req.agent;
+
+  if (!["admin", "supervisor", "lead_supervisor"].includes(role)) {
+    return res.status(403).json({ error: "Access denied." });
+  }
+
+  if (!requestIds?.length || !agentId) {
+    return res
+      .status(400)
+      .json({ error: "Request IDs and agent ID are required." });
+  }
+
+  try {
+    const { data: agent } = await supabase
+      .from("agents")
+      .select("full_name")
+      .eq("id", agentId)
+      .single();
+
+    const now = new Date().toISOString();
+
+    // Update all selected requests
+    const { error } = await supabase
+      .from("requests")
+      .update({
+        assigned_to: agentId,
+        status: "assigned",
+        assigned_at: now,
+      })
+      .in("id", requestIds)
+      .in("status", ["pending"]); // only assign pending tickets
+
+    if (error) throw error;
+
+    // Log activity for each request
+    const activityLogs = requestIds.map((id) => ({
+      request_id: id,
+      agent_id: supervisorId,
+      action: "assigned",
+      details: `Bulk assigned to ${agent?.full_name} by ${supervisorName}`,
+    }));
+
+    await supabase.from("activity_log").insert(activityLogs);
+
+    res.json({
+      success: true,
+      message: `${requestIds.length} tickets assigned to ${agent?.full_name}`,
+    });
+  } catch (err) {
+    console.error("Bulk assign error:", err);
+    res.status(500).json({ error: "Failed to bulk assign requests." });
+  }
+});
+
 module.exports = router;

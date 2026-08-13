@@ -8,6 +8,286 @@ const STATUS = {
   NOTFOUND: "notfound",
 };
 
+const PRODUCTS = [
+  {
+    id: 1,
+    icon: "ti-chart-line",
+    title: "Dividend Management",
+    description:
+      "Track and manage your dividend payments seamlessly across all your shareholdings.",
+    color: "#C0392B",
+    tag: "Popular",
+  },
+  {
+    id: 2,
+    icon: "ti-file-certificate",
+    title: "Share Certificate Services",
+    description:
+      "Request, replace or verify your share certificates quickly and securely.",
+    color: "#2255cc",
+    tag: "New",
+  },
+  {
+    id: 3,
+    icon: "ti-building-bank",
+    title: "E-Dividend Registration",
+    description:
+      "Register your bank account to receive dividends directly without delay.",
+    color: "#1a7a40",
+    tag: "Recommended",
+  },
+  {
+    id: 4,
+    icon: "ti-transfer",
+    title: "Share Transfer Services",
+    description:
+      "Transfer shares to beneficiaries or between accounts with full documentation support.",
+    color: "#7c3aed",
+    tag: null,
+  },
+  {
+    id: 5,
+    icon: "ti-id",
+    title: "KYC Update",
+    description:
+      "Keep your Know Your Customer information up to date for uninterrupted services.",
+    color: "#b36a00",
+    tag: null,
+  },
+  {
+    id: 6,
+    icon: "ti-shield-check",
+    title: "Shareholder Verification",
+    description:
+      "Verify your shareholder status and access your complete portfolio at any time.",
+    color: "#0077b6",
+    tag: null,
+  },
+];
+
+export function ProductCarousel() {
+  const [current, setCurrent] = React.useState(0);
+  const visibleCount = 3;
+  const total = PRODUCTS.length;
+
+  function prev() {
+    setCurrent((c) => (c === 0 ? total - visibleCount : c - 1));
+  }
+
+  function next() {
+    setCurrent((c) => (c >= total - visibleCount ? 0 : c + 1));
+  }
+
+  // Auto advance every 4 seconds
+  React.useEffect(() => {
+    const timer = setInterval(next, 4000);
+    return () => clearInterval(timer);
+  }, [current]);
+
+  const visible = PRODUCTS.slice(current, current + visibleCount).concat(
+    current + visibleCount > total
+      ? PRODUCTS.slice(0, (current + visibleCount) % total)
+      : [],
+  );
+
+  return (
+    <div style={{ marginBottom: "28px" }}>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "12px",
+        }}
+      >
+        <div>
+          <p
+            style={{
+              fontSize: "11px",
+              fontWeight: "500",
+              color: "#C0392B",
+              letterSpacing: "0.6px",
+              textTransform: "uppercase",
+              marginBottom: "2px",
+            }}
+          >
+            Our services
+          </p>
+          <p style={{ fontSize: "13px", color: "#6b6b6b" }}>
+            Explore what we offer to shareholders
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: "6px" }}>
+          <button
+            onClick={prev}
+            style={{
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              border: "1px solid #e0e0e0",
+              background: "#fff",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#6b6b6b",
+              transition: "all 0.15s",
+            }}
+          >
+            <i className="ti ti-chevron-left" style={{ fontSize: "14px" }} />
+          </button>
+          <button
+            onClick={next}
+            style={{
+              width: "30px",
+              height: "30px",
+              borderRadius: "50%",
+              border: "1px solid #e0e0e0",
+              background: "#fff",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#6b6b6b",
+              transition: "all 0.15s",
+            }}
+          >
+            <i className="ti ti-chevron-right" style={{ fontSize: "14px" }} />
+          </button>
+        </div>
+      </div>
+
+      {/* Cards */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "12px",
+        }}
+      >
+        {visible.map((product, idx) => (
+          <div
+            key={`${product.id}-${idx}`}
+            style={{
+              background: "#fff",
+              border: "1px solid #e8e8e8",
+              borderRadius: "10px",
+              padding: "16px",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+              transition: "transform 0.2s, box-shadow 0.2s",
+              cursor: "default",
+              position: "relative",
+              overflow: "hidden",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 1px 4px rgba(0,0,0,0.05)";
+            }}
+          >
+            {/* Tag */}
+            {product.tag && (
+              <span
+                style={{
+                  position: "absolute",
+                  top: "10px",
+                  right: "10px",
+                  fontSize: "10px",
+                  fontWeight: "500",
+                  padding: "2px 8px",
+                  borderRadius: "20px",
+                  background: `${product.color}15`,
+                  color: product.color,
+                  border: `1px solid ${product.color}30`,
+                }}
+              >
+                {product.tag}
+              </span>
+            )}
+
+            {/* Icon */}
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "10px",
+                background: `${product.color}12`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: "12px",
+              }}
+            >
+              <i
+                className={`ti ${product.icon}`}
+                style={{ fontSize: "20px", color: product.color }}
+              />
+            </div>
+
+            {/* Content */}
+            <p
+              style={{
+                fontSize: "13px",
+                fontWeight: "600",
+                color: "#1a1a1a",
+                marginBottom: "6px",
+                lineHeight: 1.3,
+              }}
+            >
+              {product.title}
+            </p>
+            <p style={{ fontSize: "12px", color: "#6b6b6b", lineHeight: 1.5 }}>
+              {product.description}
+            </p>
+
+            {/* Bottom accent line */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: "3px",
+                background: `${product.color}40`,
+                borderRadius: "0 0 10px 10px",
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Dots indicator */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "6px",
+          marginTop: "12px",
+        }}
+      >
+        {Array.from({ length: total - visibleCount + 1 }).map((_, idx) => (
+          <div
+            key={idx}
+            onClick={() => setCurrent(idx)}
+            style={{
+              width: current === idx ? "20px" : "6px",
+              height: "6px",
+              borderRadius: "3px",
+              background: current === idx ? "#C0392B" : "#d0d0d0",
+              cursor: "pointer",
+              transition: "all 0.3s",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function EmailEntry({ onNext }) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -270,9 +550,9 @@ export default function EmailEntry({ onNext }) {
                   }}
                 />
                 <p style={{ fontSize: "13px", color: "#6b6b6b" }}>
-                  Need to update your registered email?{" "}
+                  Need to update your registered email? /*
                   <a
-                    href="mailto:support@sharereg.ng?subject=Email Update Request&body=Please update my registered email. My name is: [Full Name]. My CHN/CSCS number is: [Your Number]."
+                    href="/kyc-update"
                     style={{
                       color: "#C0392B",
                       fontWeight: "500",
@@ -280,7 +560,7 @@ export default function EmailEntry({ onNext }) {
                       textDecoration: "underline",
                     }}
                   >
-                    Contact support to update it
+                    Click here to update your KYC
                   </a>
                 </p>
               </div>

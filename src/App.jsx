@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import StepBar from "./components/StepBar";
-import EmailEntry from "./pages/EmailEntry";
 import OTPVerify from "./pages/OTPVerify";
 import ProfileReview from "./pages/ProfileReview";
 import UpdateTypeSelector from "./pages/UpdateTypeSelector";
@@ -12,6 +11,7 @@ import SignatureForm from "./pages/SignatureForm";
 import NUBANChange from "./pages/NubanChange";
 import ReviewSummary from "./pages/ReviewSummary";
 import Success from "./pages/Success";
+import EmailEntry, { ProductCarousel } from "./pages/EmailEntry";
 
 // Admin imports
 import AdminNavbar from "./admin/components/AdminNavbar";
@@ -24,8 +24,11 @@ import Performance from "./admin/pages/Performance";
 import Reports from "./admin/pages/Reports";
 import Settings from "./admin/pages/Settings";
 import { getSession, clearSession } from "./admin/services/adminApi";
+import KYCStandalone from "./pages/KYCStandalone";
+console.log("Current path:", window.location.pathname);
 
 const isAdminRoute = window.location.pathname.startsWith("/admin");
+const isKYCRoute = window.location.pathname.startsWith("/kyc-update");
 
 export default function App() {
   // ── Admin state ─────────────────────────────────────────────────────────────
@@ -89,11 +92,7 @@ export default function App() {
     setStep(6);
   }
 
-  function onReviewConfirmed() {
-    const prefix = submission.tagPrefix;
-    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-    const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-    const referenceNumber = `${prefix}-${date}-${rand}`;
+  function onReviewConfirmed({ referenceNumber }) {
     setTicket({
       referenceNumber,
       type: submission.updateType,
@@ -138,6 +137,47 @@ export default function App() {
     }
   }
 
+  // ── KYC DIRECT ROUTE ─────────────────────────────────────────────────────────
+  /* if (isKYCRoute) {
+    return (
+      <div
+        style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+      >
+        <Navbar />
+        <main
+          style={{
+            flex: 1,
+            padding: "32px 24px",
+            maxWidth: "560px",
+            margin: "0 auto",
+            width: "100%",
+          }}
+        >
+          <KYCForm
+            profile={{}}
+            onNext={onFormDone}
+            onBack={() => (window.location.href = "/")}
+          />
+        </main>
+        <footer
+          style={{
+            textAlign: "center",
+            fontSize: "12px",
+            color: "#b0b0b0",
+            padding: "16px 24px",
+            borderTop: "1px solid #e8e8e8",
+            background: "#fff",
+          }}
+        >
+          ShareReg Portal &nbsp;·&nbsp; Shareholder Registry Services
+        </footer>
+      </div>
+    );
+  }
+*/
+  if (isKYCRoute) {
+    return <KYCStandalone />;
+  }
   // ── ADMIN DASHBOARD ───────────────────────────────────────────────────────
   if (isAdminRoute) {
     if (!adminAgent) {
@@ -207,6 +247,7 @@ export default function App() {
           transition: "max-width 0.3s ease",
         }}
       >
+        {step === 1 && <ProductCarousel />}
         <StepBar currentStep={step > 5 ? 5 : step} />
 
         {step === 1 && <EmailEntry onNext={onEmailDone} />}

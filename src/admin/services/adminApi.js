@@ -86,6 +86,15 @@ export async function assignRequest(requestId, agentId) {
   return handleResponse(res);
 }
 
+export async function bulkAssignRequests(requestIds, agentId) {
+  const res = await fetch(`${BASE_URL}/api/requests/bulk-assign`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ requestIds, agentId }),
+  });
+  return handleResponse(res);
+}
+
 export async function updateRequestStatus(
   requestId,
   status,
