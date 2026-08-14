@@ -155,7 +155,7 @@ export default function NUBANChange({ onBack }) {
             }}
           >
             <i className="ti ti-external-link" style={{ fontSize: "15px" }} />
-            Click NIBSS to fill the form
+            Click here to fill the form
           </a>
           {/* Disclaimer */}
           <p
