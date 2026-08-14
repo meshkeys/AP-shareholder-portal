@@ -131,28 +131,31 @@ export default function NUBANChange({ onBack }) {
             ))}
           </div>
           {/* External link button */}
-          href="https://www.nibss-plc.com.ng" target="_blank" rel="noopener
-          noreferrer" style=
-          {{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-            width: "100%",
-            padding: "10px 16px",
-            background: "#C0392B",
-            color: "#fff",
-            border: "none",
-            borderRadius: "8px",
-            fontSize: "14px",
-            fontWeight: "500",
-            cursor: "pointer",
-            textDecoration: "none",
-            boxSizing: "border-box",
-          }}
-          <a>
+
+          <a
+            href="https://docuhub3.nibss-plc.com.ng/edmms/self-service"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              width: "100%",
+              padding: "10px 16px",
+              background: "#C0392B",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              fontSize: "14px",
+              fontWeight: "500",
+              cursor: "pointer",
+              textDecoration: "none",
+              boxSizing: "border-box",
+            }}
+          >
             <i className="ti ti-external-link" style={{ fontSize: "15px" }} />
-            Go to NIBSS website to fill the form
+            Click NIBSS to fill the form
           </a>
           {/* Disclaimer */}
           <p
