@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 
 export default function ReviewSummary({
   submission,
@@ -7,20 +7,25 @@ export default function ReviewSummary({
   onBack,
 }) {
   const printRef = useRef();
+  const [loading, setLoading] = useState(false);
 
   function handlePrint() {
     window.print();
   }
 
   async function handleSubmit() {
+    setLoading(true);
     try {
+      const refNumber = generateReference();
+
+      // Step 1 — Submit the request
       const res = await fetch(
         `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/requests/submit`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            referenceNumber: generateReference(),
+            referenceNumber: refNumber,
             shareholderEmail: profile.email,
             shareholderName: `${profile.firstName} ${profile.lastName}`,
             requestType: submission.updateType,
@@ -32,10 +37,58 @@ export default function ReviewSummary({
       );
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      onConfirm({ referenceNumber: data.referenceNumber });
+
+      const requestId = data.requestId;
+
+      // Step 2 — Upload documents if any
+      const allFiles = [];
+      const allTypes = [];
+
+      // Collect main files
+      if (submission.files) {
+        Object.entries(submission.files).forEach(([docType, file]) => {
+          if (file instanceof File) {
+            allFiles.push(file);
+            allTypes.push(docType);
+          }
+        });
+      }
+
+      // Collect secondary market files
+      if (submission.secondaryMarket && submission.secondaryFiles) {
+        Object.entries(submission.secondaryFiles).forEach(([docType, file]) => {
+          if (file instanceof File) {
+            allFiles.push(file);
+            allTypes.push(`secondary_${docType}`);
+          }
+        });
+      }
+
+      // Upload files if any
+      if (allFiles.length > 0) {
+        const formData = new FormData();
+        formData.append("requestId", requestId);
+        formData.append("documentTypes", JSON.stringify(allTypes));
+        allFiles.forEach((file) => formData.append("files", file));
+
+        const uploadRes = await fetch(
+          `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/uploads/documents`,
+          {
+            method: "POST",
+            body: formData,
+          },
+        );
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok)
+          console.error("Document upload failed:", uploadData.error);
+      }
+
+      onConfirm({ referenceNumber: data.referenceNumber || refNumber });
     } catch (err) {
       console.error("Submission error:", err);
       onConfirm({ referenceNumber: generateReference() });
+    } finally {
+      setLoading(false);
     }
   }
 

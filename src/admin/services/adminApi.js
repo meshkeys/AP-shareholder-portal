@@ -301,3 +301,23 @@ export function clearSession() {
   localStorage.removeItem("adminToken");
   localStorage.removeItem("adminAgent");
 }
+
+export async function approveRequest(requestId) {
+  const res = await fetch(`${BASE_URL}/api/requests/${requestId}/approve`, {
+    method: "POST",
+    headers: getHeaders(),
+  });
+  return handleResponse(res);
+}
+
+export async function revokeApproval(requestId, reason) {
+  const res = await fetch(
+    `${BASE_URL}/api/requests/${requestId}/revoke-approval`,
+    {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ reason }),
+    },
+  );
+  return handleResponse(res);
+}

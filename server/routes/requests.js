@@ -129,7 +129,9 @@ router.get("/", authenticate, async (req, res) => {
   try {
     let query = supabase
       .from("requests")
-      .select("*, agents(id, full_name, email)", { count: "exact" })
+      .select("*, agents!requests_assigned_to_fkey(id, full_name, email)", {
+        count: "exact",
+      })
       .order("created_at", { ascending: false })
       .range((page - 1) * limit, page * limit - 1);
 
@@ -167,7 +169,7 @@ router.get("/:id", authenticate, async (req, res) => {
   try {
     const { data: request, error } = await supabase
       .from("requests")
-      .select("*, agents(id, full_name, email)")
+      .select("*, agents!requests_assigned_to_fkey(id, full_name, email)")
       .eq("id", id)
       .single();
 
@@ -180,7 +182,15 @@ router.get("/:id", authenticate, async (req, res) => {
       .eq("request_id", id);
     const { data: activity } = await supabase
       .from("activity_log")
-      .select("*, agents(id, full_name)")
+      .select(
+        `
+          *,
+          agents!activity_log_agent_id_fkey (
+            id,
+            full_name
+          )
+        `,
+      )
       .eq("request_id", id)
       .order("created_at", { ascending: false });
 
@@ -464,6 +474,173 @@ router.post("/bulk-assign", authenticate, async (req, res) => {
   } catch (err) {
     console.error("Bulk assign error:", err);
     res.status(500).json({ error: "Failed to bulk assign requests." });
+  }
+});
+
+// ── POST /api/requests/:id/approve ───────────────────────────────────────────
+router.post("/:id/approve", authenticate, async (req, res) => {
+  const { id } = req.params;
+  const { id: agentId, fullName } = req.agent;
+
+  try {
+    // Get full request with documents
+    const { data: request, error: reqError } = await supabase
+      .from("requests")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (reqError || !request) {
+      return res.status(404).json({ error: "Request not found." });
+    }
+
+    if (request.status !== "completed") {
+      return res
+        .status(400)
+        .json({ error: "Only completed requests can be approved." });
+    }
+
+    // Get documents
+    const { data: documents } = await supabase
+      .from("documents")
+      .select("*")
+      .eq("request_id", id);
+
+    // Build payload for external app
+    const externalPayload = {
+      referenceNumber: request.reference_number,
+      requestType: request.request_type,
+      requestSubtype: request.request_subtype,
+      shareholderName: request.shareholder_name,
+      shareholderEmail: request.shareholder_email,
+      fields: request.fields,
+      submittedAt: request.submitted_at,
+      resolvedAt: request.resolved_at,
+      approvedAt: new Date().toISOString(),
+      approvedBy: fullName,
+      documents: (documents || []).map((doc) => ({
+        type: doc.document_type,
+        fileName: doc.file_name,
+        fileUrl: doc.file_url,
+      })),
+    };
+
+    // Send to external app if endpoint is configured
+    const EXTERNAL_ENDPOINT = process.env.EXTERNAL_APP_ENDPOINT;
+    let externalRef = null;
+
+    if (EXTERNAL_ENDPOINT) {
+      try {
+        const extRes = await fetch(EXTERNAL_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.EXTERNAL_APP_TOKEN || ""}`,
+          },
+          body: JSON.stringify(externalPayload),
+        });
+        const extData = await extRes.json();
+        externalRef = extData?.referenceNumber || extData?.id || null;
+        console.log(
+          `Request ${request.reference_number} synced to external app.`,
+        );
+      } catch (extErr) {
+        console.error("External app sync failed:", extErr.message);
+        // Don't block approval if external sync fails
+      }
+    } else {
+      console.log(
+        `External endpoint not configured. Approval logged locally only.`,
+      );
+    }
+
+    // Update request status to approved
+    const { data: updated, error: updateError } = await supabase
+      .from("requests")
+      .update({
+        status: "approved",
+        approved_at: new Date().toISOString(),
+        approved_by: agentId,
+        external_sync: !!externalRef,
+        external_ref: externalRef,
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    // Log activity
+    await supabase.from("activity_log").insert([
+      {
+        request_id: id,
+        agent_id: agentId,
+        action: "approved",
+        details: `Request approved by ${fullName}${externalRef ? ` — External ref: ${externalRef}` : ""}`,
+      },
+    ]);
+
+    res.json({
+      success: true,
+      request: updated,
+      externalRef,
+      synced: !!externalRef,
+    });
+  } catch (err) {
+    console.error("Approve request error:", err);
+    res.status(500).json({ error: "Failed to approve request." });
+  }
+});
+
+// ── POST /api/requests/:id/revoke-approval ────────────────────────────────────
+router.post("/:id/revoke-approval", authenticate, async (req, res) => {
+  const { id } = req.params;
+  const { id: agentId, fullName } = req.agent;
+  const { reason } = req.body;
+
+  try {
+    const { data: request } = await supabase
+      .from("requests")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (!request) {
+      return res.status(404).json({ error: "Request not found." });
+    }
+
+    if (request.status !== "approved") {
+      return res
+        .status(400)
+        .json({ error: "Only approved requests can be revoked." });
+    }
+
+    const { data: updated, error } = await supabase
+      .from("requests")
+      .update({
+        status: "approval_revoked",
+        external_sync: false,
+        external_ref: null,
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    await supabase.from("activity_log").insert([
+      {
+        request_id: id,
+        agent_id: agentId,
+        action: "approval_revoked",
+        details: `Approval revoked by ${fullName}${reason ? ` — Reason: ${reason}` : ""}`,
+      },
+    ]);
+
+    res.json({ success: true, request: updated });
+  } catch (err) {
+    console.error("Revoke approval error:", err);
+    res.status(500).json({ error: "Failed to revoke approval." });
   }
 });
 

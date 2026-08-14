@@ -36,6 +36,20 @@ const STATUS_CONFIG = {
     border: "#e8b4af",
     icon: "ti-circle-x",
   },
+  approved: {
+    label: "Approved",
+    background: "#f0faf4",
+    color: "#1a7a40",
+    border: "#a8dfc0",
+    icon: "ti-circle-check",
+  },
+  approval_revoked: {
+    label: "Approval Revoked",
+    background: "#fff8e6",
+    color: "#b36a00",
+    border: "#f5d78e",
+    icon: "ti-rotate",
+  },
 };
 
 const TYPE_CONFIG = {

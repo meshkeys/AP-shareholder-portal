@@ -7,6 +7,8 @@ import {
   updateRequestStatus,
   addNote,
   toggleEmailNotification,
+  approveRequest,
+  revokeApproval,
 } from "../services/adminApi";
 
 const STATUS_ACTIONS = {
@@ -15,6 +17,8 @@ const STATUS_ACTIONS = {
   in_progress: ["completed", "rejected"],
   completed: [],
   rejected: [],
+  approved: [],
+  approval_revoked: ["in_progress"],
 };
 
 const DEFAULT_MESSAGES = {
@@ -43,6 +47,10 @@ export default function RequestDetail({ agent, requestId, onBack }) {
   const [addingNote, setAddingNote] = useState(false);
   const [noteText, setNoteText] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [approving, setApproving] = useState(false);
+  const [revoking, setRevoking] = useState(false);
+  const [revokeReason, setRevokeReason] = useState("");
+  const [showRevoke, setShowRevoke] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -56,8 +64,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
       setDocuments(res.documents || []);
       setActivity(res.activity || []);
       setNoteText(res.request.internal_notes || "");
-
-      if (["admin", "supervisor"].includes(agent.role)) {
+      if (["admin", "supervisor", "lead_supervisor"].includes(agent.role)) {
         const agentsRes = await getAgents();
         setAgents(
           agentsRes.agents?.filter((a) => a.role === "agent" && a.is_active) ||
@@ -128,6 +135,38 @@ export default function RequestDetail({ agent, requestId, onBack }) {
       loadData();
     } catch (err) {
       setError(err.message);
+    }
+  }
+
+  async function handleApprove() {
+    setApproving(true);
+    try {
+      const res = await approveRequest(requestId);
+      setSuccessMsg(
+        res.synced
+          ? `Request approved and synced to external app. External ref: ${res.externalRef}`
+          : "Request approved successfully. External sync pending — add endpoint to activate.",
+      );
+      loadData();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setApproving(false);
+    }
+  }
+
+  async function handleRevokeApproval() {
+    setRevoking(true);
+    try {
+      await revokeApproval(requestId, revokeReason);
+      setSuccessMsg("Approval revoked successfully.");
+      setShowRevoke(false);
+      setRevokeReason("");
+      loadData();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setRevoking(false);
     }
   }
 
@@ -234,7 +273,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           gap: "20px",
         }}
       >
-        {/* Left column */}
+        {/* ── LEFT COLUMN ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {/* Request header */}
           <div
@@ -289,7 +328,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                 <TypeBadge type={request.request_type} />
               </div>
             </div>
-
             <div
               style={{
                 display: "grid",
@@ -415,18 +453,20 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                       </p>
                     </div>
                   </div>
-                  href={doc.file_url}
-                  target="_blank" rel="noopener noreferrer" style=
-                  {{
-                    fontSize: "12px",
-                    color: "#C0392B",
-                    fontWeight: "500",
-                    textDecoration: "none",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px",
-                  }}
-                  <a>
+                  <a
+                    href={doc.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: "12px",
+                      color: "#C0392B",
+                      fontWeight: "500",
+                      textDecoration: "none",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
                     <i
                       className="ti ti-download"
                       style={{ fontSize: "14px" }}
@@ -580,10 +620,10 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           </div>
         </div>
 
-        {/* Right column — actions */}
+        {/* ── RIGHT COLUMN ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {/* Assign request — supervisors and admins only */}
-          {["admin", "supervisor"].includes(agent.role) && (
+          {["admin", "supervisor", "lead_supervisor"].includes(agent.role) && (
             <div
               style={{
                 background: "#fff",
@@ -672,7 +712,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                 />
                 Update status
               </h3>
-
               <select
                 value={newStatus}
                 onChange={(e) => {
@@ -690,11 +729,10 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   </option>
                 ))}
               </select>
-
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Add a note about this status change (optional)"
+                placeholder="Add a note (optional)"
                 rows={2}
                 style={{
                   width: "100%",
@@ -708,7 +746,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   marginBottom: "10px",
                 }}
               />
-
               {/* Email toggle */}
               <div
                 onClick={() => setSendEmail((prev) => !prev)}
@@ -754,8 +791,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   Send email notification to shareholder
                 </p>
               </div>
-
-              {/* Editable email message */}
               {sendEmail && newStatus && (
                 <div style={{ marginBottom: "10px" }}>
                   <label
@@ -785,7 +820,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   />
                 </div>
               )}
-
               <button
                 className="btn-primary"
                 onClick={handleStatusUpdate}
@@ -808,7 +842,191 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             </div>
           )}
 
-          {/* Email notification toggle for this request */}
+          {/* ── APPROVE REQUEST — shown when completed ── */}
+          {request.status === "completed" && (
+            <div
+              style={{
+                background: "#fff",
+                border: "1px solid #a8dfc0",
+                borderRadius: "12px",
+                padding: "16px",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  marginBottom: "8px",
+                }}
+              >
+                <i
+                  className="ti ti-circle-check"
+                  style={{
+                    fontSize: "15px",
+                    marginRight: "6px",
+                    color: "#1a7a40",
+                  }}
+                />
+                Approve request
+              </h3>
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "#6b6b6b",
+                  marginBottom: "12px",
+                  lineHeight: 1.5,
+                }}
+              >
+                Approving will mark this request as final and send the data to
+                the external system.
+              </p>
+              <button
+                className="btn-primary"
+                onClick={handleApprove}
+                disabled={approving}
+                style={{ background: "#1a7a40" }}
+              >
+                {approving ? (
+                  <>
+                    <span className="spinner" /> Approving...
+                  </>
+                ) : (
+                  <>
+                    <i className="ti ti-check" style={{ fontSize: "15px" }} />{" "}
+                    Approve this request
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* ── REVOKE APPROVAL — shown when approved ── */}
+          {request.status === "approved" && (
+            <div
+              style={{
+                background: "#fff",
+                border: "1px solid #f5d78e",
+                borderRadius: "12px",
+                padding: "16px",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  marginBottom: "8px",
+                }}
+              >
+                <i
+                  className="ti ti-rotate"
+                  style={{
+                    fontSize: "15px",
+                    marginRight: "6px",
+                    color: "#b36a00",
+                  }}
+                />
+                Approval status
+              </h3>
+              <div
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: "8px",
+                  background: request.external_sync ? "#f0faf4" : "#fff8e6",
+                  border: `1px solid ${request.external_sync ? "#a8dfc0" : "#f5d78e"}`,
+                  marginBottom: "12px",
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: "500",
+                    color: request.external_sync ? "#1a7a40" : "#b36a00",
+                  }}
+                >
+                  <i
+                    className={`ti ${request.external_sync ? "ti-cloud-check" : "ti-cloud-off"}`}
+                    style={{ fontSize: "13px", marginRight: "5px" }}
+                  />
+                  {request.external_sync
+                    ? `Synced — Ref: ${request.external_ref}`
+                    : "Not yet synced to external app"}
+                </p>
+              </div>
+              {!showRevoke ? (
+                <button
+                  className="btn-ghost"
+                  onClick={() => setShowRevoke(true)}
+                  style={{ fontSize: "13px" }}
+                >
+                  <i
+                    className="ti ti-arrow-back"
+                    style={{ fontSize: "14px" }}
+                  />{" "}
+                  Revoke approval
+                </button>
+              ) : (
+                <div>
+                  <label
+                    style={{
+                      fontSize: "12px",
+                      color: "#6b6b6b",
+                      marginBottom: "5px",
+                      display: "block",
+                    }}
+                  >
+                    Reason for revoking (optional)
+                  </label>
+                  <textarea
+                    value={revokeReason}
+                    onChange={(e) => setRevokeReason(e.target.value)}
+                    placeholder="Enter reason..."
+                    rows={2}
+                    style={{
+                      width: "100%",
+                      padding: "8px 10px",
+                      fontSize: "13px",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: "6px",
+                      resize: "none",
+                      fontFamily: "inherit",
+                      outline: "none",
+                      marginBottom: "8px",
+                    }}
+                  />
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      className="btn-primary"
+                      onClick={handleRevokeApproval}
+                      disabled={revoking}
+                      style={{ flex: 1, background: "#b36a00" }}
+                    >
+                      {revoking ? (
+                        <>
+                          <span className="spinner" /> Revoking...
+                        </>
+                      ) : (
+                        "Confirm revoke"
+                      )}
+                    </button>
+                    <button
+                      className="btn-ghost"
+                      onClick={() => {
+                        setShowRevoke(false);
+                        setRevokeReason("");
+                      }}
+                      style={{ flex: 1 }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Email notification toggle */}
           <div
             style={{
               background: "#fff",
@@ -940,6 +1158,10 @@ function getActionIcon(action) {
     note_added: "ti-notes",
     email_sent: "ti-mail",
     email_toggle_changed: "ti-mail-off",
+    approved: "ti-circle-check",
+    approval_revoked: "ti-rotate",
+    external_accepted: "ti-cloud-check",
+    external_rejected: "ti-cloud-off",
   };
   return icons[action] || "ti-point";
 }

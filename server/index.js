@@ -7,6 +7,7 @@ const authRoutes = require("./routes/auth");
 const requestRoutes = require("./routes/requests");
 const agentRoutes = require("./routes/agents");
 const escalationRoutes = require("./routes/escalations");
+const uploadRoutes = require("./routes/uploads");
 const { startEscalationScheduler } = require("./utils/escalation");
 
 const app = express();
@@ -27,6 +28,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/agents", agentRoutes);
 app.use("/api/escalations", escalationRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => {
