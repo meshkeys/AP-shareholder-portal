@@ -8,7 +8,7 @@ import NameChangeForm from "./pages/NameChangeForm";
 import KYCForm from "./pages/KYCForm";
 import AddressForm from "./pages/AddressForm";
 import SignatureForm from "./pages/SignatureForm";
-import NUBANChange from "./pages/NubanChange";
+import NUBANChange from "./pages/NUBANChange";
 import ReviewSummary from "./pages/ReviewSummary";
 import Success from "./pages/Success";
 import EmailEntry, { ProductCarousel } from "./pages/EmailEntry";
