@@ -23,6 +23,10 @@ app.use(
     ],
   }),
 );
+
+// Handle preflight OPTIONS requests
+app.options("*", cors());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
