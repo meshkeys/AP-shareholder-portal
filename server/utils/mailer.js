@@ -6,8 +6,6 @@ const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 const apiKey = apiInstance.authentications["api-key"];
 apiKey.apiKey = process.env.BREVO_API_KEY;
 
-const apiInstance = new Brevo.TransactionalEmailsApi();
-
 // ── Send OTP Email ────────────────────────────────────────────────────────────
 async function sendOTPEmail(toEmail, otp) {
   const email = new SibApiV3Sdk.SendSmtpEmail();
