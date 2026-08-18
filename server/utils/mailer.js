@@ -1,4 +1,3 @@
-const Brevo = require("@getbrevo/brevo");
 require("dotenv").config();
 const SibApiV3Sdk = require("@getbrevo/brevo");
 
