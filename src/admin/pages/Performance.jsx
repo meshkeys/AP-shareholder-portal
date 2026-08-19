@@ -804,8 +804,7 @@ export default function Performance({ agent, onNavigate }) {
               }}
             >
               <h3 style={{ fontSize: "14px", fontWeight: "500" }}>
-                Team performance —{" "}
-                {PERIOD_OPTIONS.find((p) => p.value === period)?.label}
+                Team performance — {startDate} to {endDate}
               </h3>
             </div>
             <div style={{ overflowX: "auto" }}>
