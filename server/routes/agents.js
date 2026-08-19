@@ -307,6 +307,70 @@ router.get("/reports", authenticate, async (req, res) => {
   }
 });
 
+// ── GET /api/agents/settings/system ──────────────────────────────────────────
+router.get("/settings/system", authenticate, async (req, res) => {
+  const { role } = req.agent;
+  if (role !== "admin") {
+    return res
+      .status(403)
+      .json({ error: "Only admins can view system settings." });
+  }
+  try {
+    const { data, error } = await supabase
+      .from("system_settings")
+      .select("*")
+      .single();
+    if (error) throw error;
+    res.json({ success: true, settings: data });
+  } catch (err) {
+    console.error("Get settings error:", err);
+    res.status(500).json({ error: "Failed to fetch settings." });
+  }
+});
+
+// ── PATCH /api/agents/settings/system ────────────────────────────────────────
+router.patch("/settings/system", authenticate, async (req, res) => {
+  const {
+    emailNotifications,
+    slaAssignHours,
+    slaResponseHours,
+    slaResolveHours,
+  } = req.body;
+  const { role, id: agentId } = req.agent;
+  if (role !== "admin") {
+    return res
+      .status(403)
+      .json({ error: "Only admins can update system settings." });
+  }
+  try {
+    const updateData = { updated_by: agentId };
+    if (emailNotifications !== undefined)
+      updateData.email_notifications = emailNotifications;
+    if (slaAssignHours !== undefined)
+      updateData.sla_assign_hours = slaAssignHours;
+    if (slaResponseHours !== undefined)
+      updateData.sla_response_hours = slaResponseHours;
+    if (slaResolveHours !== undefined)
+      updateData.sla_resolve_hours = slaResolveHours;
+
+    const { data: settings } = await supabase
+      .from("system_settings")
+      .select("id")
+      .single();
+    const { data, error } = await supabase
+      .from("system_settings")
+      .update(updateData)
+      .eq("id", settings.id)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json({ success: true, settings: data });
+  } catch (err) {
+    console.error("Update settings error:", err);
+    res.status(500).json({ error: "Failed to update settings." });
+  }
+});
+
 // ── GET /api/agents/:id ───────────────────────────────────────────────────────
 router.get("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
@@ -397,70 +461,6 @@ router.delete("/:id", authenticate, async (req, res) => {
   } catch (err) {
     console.error("Deactivate agent error:", err);
     res.status(500).json({ error: "Failed to deactivate agent." });
-  }
-});
-
-// ── GET /api/agents/settings/system ──────────────────────────────────────────
-router.get("/settings/system", authenticate, async (req, res) => {
-  const { role } = req.agent;
-  if (role !== "admin") {
-    return res
-      .status(403)
-      .json({ error: "Only admins can view system settings." });
-  }
-  try {
-    const { data, error } = await supabase
-      .from("system_settings")
-      .select("*")
-      .single();
-    if (error) throw error;
-    res.json({ success: true, settings: data });
-  } catch (err) {
-    console.error("Get settings error:", err);
-    res.status(500).json({ error: "Failed to fetch settings." });
-  }
-});
-
-// ── PATCH /api/agents/settings/system ────────────────────────────────────────
-router.patch("/settings/system", authenticate, async (req, res) => {
-  const {
-    emailNotifications,
-    slaAssignHours,
-    slaResponseHours,
-    slaResolveHours,
-  } = req.body;
-  const { role, id: agentId } = req.agent;
-  if (role !== "admin") {
-    return res
-      .status(403)
-      .json({ error: "Only admins can update system settings." });
-  }
-  try {
-    const updateData = { updated_by: agentId };
-    if (emailNotifications !== undefined)
-      updateData.email_notifications = emailNotifications;
-    if (slaAssignHours !== undefined)
-      updateData.sla_assign_hours = slaAssignHours;
-    if (slaResponseHours !== undefined)
-      updateData.sla_response_hours = slaResponseHours;
-    if (slaResolveHours !== undefined)
-      updateData.sla_resolve_hours = slaResolveHours;
-
-    const { data: settings } = await supabase
-      .from("system_settings")
-      .select("id")
-      .single();
-    const { data, error } = await supabase
-      .from("system_settings")
-      .update(updateData)
-      .eq("id", settings.id)
-      .select()
-      .single();
-    if (error) throw error;
-    res.json({ success: true, settings: data });
-  } catch (err) {
-    console.error("Update settings error:", err);
-    res.status(500).json({ error: "Failed to update settings." });
   }
 });
 
