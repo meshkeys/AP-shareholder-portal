@@ -301,7 +301,7 @@ export default function Performance({ agent, onNavigate }) {
               <label
                 style={{
                   fontSize: "12px",
-                  color: "#9b9b9b",
+                  color: "#6b6b6b",
                   display: "block",
                   marginBottom: "3px",
                 }}
@@ -314,12 +314,12 @@ export default function Performance({ agent, onNavigate }) {
                 max={endDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 style={{
-                  padding: "6px 10px",
+                  padding: "8px 12px",
                   fontSize: "13px",
-                  border: "1px solid #3a3a3a",
+                  border: "1px solid #e0e0e0",
                   borderRadius: "6px",
-                  background: "#2a2a2a",
-                  color: "#fff",
+                  background: "#fff",
+                  color: "#1a1a1a",
                   outline: "none",
                   cursor: "pointer",
                 }}
@@ -329,7 +329,7 @@ export default function Performance({ agent, onNavigate }) {
               <label
                 style={{
                   fontSize: "12px",
-                  color: "#9b9b9b",
+                  color: "#6b6b6b",
                   display: "block",
                   marginBottom: "3px",
                 }}
@@ -343,12 +343,12 @@ export default function Performance({ agent, onNavigate }) {
                 max={today}
                 onChange={(e) => setEndDate(e.target.value)}
                 style={{
-                  padding: "6px 10px",
+                  padding: "8px 12px",
                   fontSize: "13px",
-                  border: "1px solid #3a3a3a",
+                  border: "1px solid #e0e0e0",
                   borderRadius: "6px",
-                  background: "#2a2a2a",
-                  color: "#fff",
+                  background: "#fff",
+                  color: "#1a1a1a",
                   outline: "none",
                   cursor: "pointer",
                 }}
