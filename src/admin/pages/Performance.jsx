@@ -11,12 +11,10 @@ function getHeaders() {
   };
 }
 
-const PERIOD_OPTIONS = [
-  { value: "weekly", label: "This week" },
-  { value: "monthly", label: "This month" },
-  { value: "quarterly", label: "This quarter" },
-  { value: "alltime", label: "All time" },
-];
+const today = new Date().toISOString().slice(0, 10);
+const weekStart = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  .toISOString()
+  .slice(0, 10);
 
 const SLA_COLORS = {
   on_track: {
@@ -46,7 +44,8 @@ const SLA_COLORS = {
 };
 
 export default function Performance({ agent, onNavigate }) {
-  const [period, setPeriod] = useState("weekly");
+  const [startDate, setStartDate] = useState(weekStart);
+  const [endDate, setEndDate] = useState(today);
   const [data, setData] = useState(null);
   const [teamData, setTeamData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -55,22 +54,23 @@ export default function Performance({ agent, onNavigate }) {
 
   useEffect(() => {
     loadData();
-  }, [period]);
+  }, []);
 
   async function loadData() {
     setLoading(true);
     setError("");
     try {
       if (isAgentRole) {
-        const res = await fetch(`${API_URL}/api/agents/performance/me`, {
-          headers: getHeaders(),
-        });
+        const res = await fetch(
+          `${API_URL}/api/agents/performance/me?startDate=${startDate}&endDate=${endDate}`,
+          { headers: getHeaders() },
+        );
         const json = await res.json();
         if (!res.ok) throw new Error(json.error);
         setData(json);
       } else {
         const res = await fetch(
-          `${API_URL}/api/agents/performance/team?periodType=${period}`,
+          `${API_URL}/api/agents/performance/team?startDate=${startDate}&endDate=${endDate}`,
           { headers: getHeaders() },
         );
         const json = await res.json();
@@ -289,27 +289,93 @@ export default function Performance({ agent, onNavigate }) {
             borderRadius: "8px",
           }}
         >
-          {PERIOD_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setPeriod(opt.value)}
-              style={{
-                padding: "6px 12px",
-                borderRadius: "6px",
-                border: "none",
-                fontSize: "12px",
-                fontWeight: period === opt.value ? "500" : "400",
-                background: period === opt.value ? "#fff" : "transparent",
-                color: period === opt.value ? "#1a1a1a" : "#6b6b6b",
-                cursor: "pointer",
-                boxShadow:
-                  period === opt.value ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
-                transition: "all 0.15s",
-              }}
-            >
-              {opt.label}
-            </button>
-          ))}
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <label
+                style={{
+                  fontSize: "12px",
+                  color: "#9b9b9b",
+                  display: "block",
+                  marginBottom: "3px",
+                }}
+              >
+                From
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                max={endDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                style={{
+                  padding: "6px 10px",
+                  fontSize: "13px",
+                  border: "1px solid #3a3a3a",
+                  borderRadius: "6px",
+                  background: "#2a2a2a",
+                  color: "#fff",
+                  outline: "none",
+                  cursor: "pointer",
+                }}
+              />
+            </div>
+            <div>
+              <label
+                style={{
+                  fontSize: "12px",
+                  color: "#9b9b9b",
+                  display: "block",
+                  marginBottom: "3px",
+                }}
+              >
+                To
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                min={startDate}
+                max={today}
+                onChange={(e) => setEndDate(e.target.value)}
+                style={{
+                  padding: "6px 10px",
+                  fontSize: "13px",
+                  border: "1px solid #3a3a3a",
+                  borderRadius: "6px",
+                  background: "#2a2a2a",
+                  color: "#fff",
+                  outline: "none",
+                  cursor: "pointer",
+                }}
+              />
+            </div>
+            <div style={{ marginTop: "18px" }}>
+              <button
+                onClick={loadData}
+                style={{
+                  padding: "7px 14px",
+                  background: "#C0392B",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontSize: "13px",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                }}
+              >
+                <i
+                  className="ti ti-search"
+                  style={{ fontSize: "14px", marginRight: "5px" }}
+                />
+                Apply
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

@@ -77,6 +77,7 @@ router.get("/workload", authenticate, async (req, res) => {
 // Get current agent's own performance
 router.get("/performance/me", authenticate, async (req, res) => {
   const { id: agentId } = req.agent;
+  const { startDate, endDate } = req.query;
 
   try {
     const settings = await getSLASettings();
