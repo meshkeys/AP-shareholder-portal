@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const { supabase } = require("../utils/supabase");
+const { sendAgentWelcomeEmail } = require("../utils/mailer");
+
 require("dotenv").config();
 
 // ── POST /api/auth/login ──────────────────────────────────────────────────────
@@ -27,12 +29,9 @@ router.post("/login", async (req, res) => {
 
     // Check if agent is active
     if (!agent.is_active) {
-      return res
-        .status(401)
-        .json({
-          error:
-            "Your account has been deactivated. Contact your administrator.",
-        });
+      return res.status(401).json({
+        error: "Your account has been deactivated. Contact your administrator.",
+      });
     }
 
     // Verify password
@@ -96,6 +95,7 @@ router.post("/create-agent", async (req, res) => {
           email: email.toLowerCase(),
           password_hash: passwordHash,
           role,
+          must_change_password: true,
         },
       ])
       .select()
@@ -108,6 +108,18 @@ router.post("/create-agent", async (req, res) => {
           .json({ error: "An agent with this email already exists." });
       }
       throw error;
+    }
+
+    // Send welcome email
+    try {
+      await sendAgentWelcomeEmail(
+        data.email,
+        data.full_name,
+        data.role,
+        password,
+      );
+    } catch (emailErr) {
+      console.error("Welcome email failed:", emailErr.message);
     }
 
     res.json({
@@ -161,9 +173,10 @@ router.post("/change-password", async (req, res) => {
     const passwordHash = await bcrypt.hash(newPassword, salt);
 
     // Update password
+    // Clear must_change_password flag
     await supabase
       .from("agents")
-      .update({ password_hash: passwordHash })
+      .update({ must_change_password: false })
       .eq("id", agentId);
 
     res.json({ success: true, message: "Password changed successfully." });

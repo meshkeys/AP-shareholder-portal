@@ -1,0 +1,187 @@
+import React, { useState } from "react";
+import { changePassword } from "../services/adminApi";
+
+export default function ChangePassword({ agent, onDone }) {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  function validate() {
+    if (!currentPassword) return "Enter your temporary password.";
+    if (!newPassword) return "Enter a new password.";
+    if (newPassword.length < 8)
+      return "New password must be at least 8 characters.";
+    if (newPassword !== confirmPassword) return "Passwords do not match.";
+    return "";
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const err = validate();
+    if (err) {
+      setError(err);
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+    try {
+      await changePassword(agent.id, currentPassword, newPassword);
+      onDone();
+    } catch (err) {
+      setError(err.message || "Failed to change password. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const inputStyle = {
+    width: "100%",
+    padding: "9px 12px",
+    fontSize: "14px",
+    border: "1px solid #e0e0e0",
+    borderRadius: "8px",
+    background: "#fff",
+    color: "#1a1a1a",
+    outline: "none",
+  };
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#f0f0f0",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: "420px" }}>
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <div
+            style={{
+              width: "52px",
+              height: "52px",
+              background: "#C0392B",
+              borderRadius: "12px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 12px",
+              color: "#fff",
+              fontSize: "18px",
+              fontWeight: "700",
+            }}
+          >
+            SR
+          </div>
+          <h1
+            style={{
+              fontSize: "20px",
+              fontWeight: "600",
+              color: "#1a1a1a",
+              marginBottom: "4px",
+            }}
+          >
+            Change your password
+          </h1>
+          <p style={{ fontSize: "13px", color: "#6b6b6b" }}>
+            You must change your temporary password before continuing.
+          </p>
+        </div>
+
+        <div className="card">
+          {/* Warning */}
+          <div className="alert alert-error" style={{ marginBottom: "20px" }}>
+            <i
+              className="ti ti-alert-circle"
+              style={{ fontSize: "15px", flexShrink: 0 }}
+            />
+            For security, please change your temporary password now.
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="alert alert-error" style={{ marginBottom: "16px" }}>
+              <i
+                className="ti ti-alert-circle"
+                style={{ fontSize: "15px", flexShrink: 0 }}
+              />
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="field-group">
+              <label>Temporary password</label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => {
+                  setCurrentPassword(e.target.value);
+                  setError("");
+                }}
+                placeholder="Enter temporary password"
+                style={inputStyle}
+                disabled={loading}
+                autoFocus
+              />
+            </div>
+
+            <div className="field-group">
+              <label>New password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  setError("");
+                }}
+                placeholder="At least 8 characters"
+                style={inputStyle}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="field-group">
+              <label>Confirm new password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setError("");
+                }}
+                placeholder="Repeat new password"
+                style={inputStyle}
+                disabled={loading}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="btn-primary"
+              style={{ marginTop: "8px" }}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="spinner" /> Changing password...
+                </>
+              ) : (
+                <>
+                  <i className="ti ti-lock" style={{ fontSize: "15px" }} />{" "}
+                  Change password
+                </>
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}

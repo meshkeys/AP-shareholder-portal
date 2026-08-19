@@ -12,6 +12,7 @@ import NUBANChange from "./pages/NUBANChange";
 import ReviewSummary from "./pages/ReviewSummary";
 import Success from "./pages/Success";
 import EmailEntry, { ProductCarousel } from "./pages/EmailEntry";
+import ChangePassword from "./admin/pages/ChangePassword";
 
 // Admin imports
 import AdminNavbar from "./admin/components/AdminNavbar";
@@ -184,6 +185,16 @@ export default function App() {
       return <Login onLogin={(agent) => setAdminAgent(agent)} />;
     }
 
+    if (adminAgent.mustChangePassword) {
+      return (
+        <ChangePassword
+          agent={adminAgent}
+          onDone={() =>
+            setAdminAgent((prev) => ({ ...prev, mustChangePassword: false }))
+          }
+        />
+      );
+    }
     return (
       <div
         style={{
