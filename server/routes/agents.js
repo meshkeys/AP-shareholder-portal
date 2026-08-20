@@ -214,7 +214,9 @@ router.get("/reports", authenticate, async (req, res) => {
   }
 
   try {
-    let query = supabase.from("requests").select("*, agents(id, full_name)");
+    let query = supabase
+      .from("requests")
+      .select("*, agents!requests_assigned_to_fkey(id, full_name)");
 
     if (startDate) query = query.gte("submitted_at", startDate);
     if (endDate) query = query.lte("submitted_at", endDate + "T23:59:59Z");
