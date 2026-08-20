@@ -56,7 +56,7 @@ export default function Login({ onLogin }) {
               fontWeight: "700",
             }}
           >
-            SR
+            AP-SR
           </div>
           <h1
             style={{
@@ -66,7 +66,7 @@ export default function Login({ onLogin }) {
               marginBottom: "4px",
             }}
           >
-            ShareReg Admin
+            Africa Prudential ShareReg Admin
           </h1>
           <p style={{ fontSize: "13px", color: "#6b6b6b" }}>
             Sign in to your agent account
@@ -120,11 +120,7 @@ export default function Login({ onLogin }) {
                   placeholder="Enter your password"
                   autoComplete="current-password"
                   disabled={loading}
-                  style={{
-                    paddingRight: "40px",
-                    width: "100%",
-                    height: "100%",
-                  }}
+                  style={{ paddingRight: "40px", width: "100%" }}
                 />
                 <button
                   type="button"
