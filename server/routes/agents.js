@@ -467,4 +467,32 @@ router.delete("/:id", authenticate, async (req, res) => {
   }
 });
 
+// ── DELETE /api/agents/:id/delete ─────────────────────────────────────────────
+// Permanently delete agent — admins only
+router.delete("/:id/delete", authenticate, async (req, res) => {
+  const { id } = req.params;
+  const { role: agentRole, id: currentAgentId } = req.agent;
+
+  if (agentRole !== "admin") {
+    return res.status(403).json({ error: "Only admins can delete agents." });
+  }
+
+  if (id === currentAgentId) {
+    return res
+      .status(400)
+      .json({ error: "You cannot delete your own account." });
+  }
+
+  try {
+    const { error } = await supabase.from("agents").delete().eq("id", id);
+
+    if (error) throw error;
+
+    res.json({ success: true, message: "Agent permanently deleted." });
+  } catch (err) {
+    console.error("Delete agent error:", err);
+    res.status(500).json({ error: "Failed to delete agent." });
+  }
+});
+
 module.exports = router;

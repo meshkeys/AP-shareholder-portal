@@ -83,6 +83,33 @@ export default function Agents({ agent }) {
     }
   }
 
+  async function handleDelete(agentId, agentName) {
+    if (
+      !window.confirm(
+        `Are you sure you want to permanently delete ${agentName}? This action cannot be undone.`,
+      )
+    )
+      return;
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:5000"}/api/agents/${agentId}/delete`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("adminToken")}`,
+          },
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setSuccessMsg(`${agentName} has been permanently deleted.`);
+      loadAgents();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   async function handleResetPassword() {
     if (!newPass.trim()) {
       setError("New password is required.");
@@ -596,6 +623,24 @@ export default function Agents({ agent }) {
                           }}
                         >
                           {a.is_active ? "Deactivate" : "Reactivate"}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(a.id, a.full_name)}
+                          style={{
+                            fontSize: "12px",
+                            color: "#C0392B",
+                            background: "#fdf1f0",
+                            border: "1px solid #e8b4af",
+                            borderRadius: "6px",
+                            padding: "4px 10px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <i
+                            className="ti ti-trash"
+                            style={{ fontSize: "12px", marginRight: "3px" }}
+                          />
+                          Delete
                         </button>
                       </div>
                     )}
