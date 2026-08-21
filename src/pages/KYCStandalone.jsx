@@ -130,9 +130,6 @@ export default function KYCStandalone() {
       setRefNumber(data.referenceNumber || referenceNumber);
       setSubmitted(true);
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-
       setRefNumber(data.referenceNumber || referenceNumber);
       setSubmitted(true);
     } catch (err) {
