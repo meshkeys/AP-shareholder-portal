@@ -56,7 +56,7 @@ export default function Login({ onLogin }) {
               fontWeight: "700",
             }}
           >
-            AP-SR
+            SR
           </div>
           <h1
             style={{
