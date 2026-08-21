@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getSession } from "../services/adminApi";
+import { exportToFile, formatPerformanceForExport } from "../utils/exportData";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -219,6 +220,17 @@ export default function Performance({ agent, onNavigate }) {
     );
   }
 
+  function handleExport() {
+    if (!teamData?.team) return;
+    const data = formatPerformanceForExport(teamData.team);
+    exportToFile(
+      data,
+      `performance_${startDate}_${endDate}`,
+      "xlsx",
+      "Performance",
+    );
+  }
+
   if (loading)
     return (
       <div
@@ -374,6 +386,32 @@ export default function Performance({ agent, onNavigate }) {
                 />
                 Apply
               </button>
+              {!isAgentRole && (
+                <div style={{ marginTop: "18px" }}>
+                  <button
+                    onClick={handleExport}
+                    style={{
+                      padding: "7px 14px",
+                      background: "#1a7a40",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      fontSize: "13px",
+                      fontWeight: "500",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                    }}
+                  >
+                    <i
+                      className="ti ti-file-spreadsheet"
+                      style={{ fontSize: "14px" }}
+                    />
+                    Export Excel
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

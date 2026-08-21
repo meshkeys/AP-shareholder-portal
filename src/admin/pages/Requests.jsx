@@ -5,6 +5,7 @@ import {
   getAgents,
   bulkAssignRequests,
 } from "../services/adminApi";
+import { exportToFile, formatRequestsForExport } from "../utils/exportData";
 
 const STATUS_OPTIONS = [
   { value: "", label: "All statuses" },
@@ -36,6 +37,7 @@ export default function Requests({ agent, onNavigate }) {
   const [selected, setSelected] = useState([]);
   const [bulkAgent, setBulkAgent] = useState("");
   const [bulkAssigning, setBulkAssigning] = useState(false);
+  const [showExport, setShowExport] = useState(false);
   const limit = 15;
 
   const canAssign = ["admin", "supervisor", "lead_supervisor"].includes(
@@ -113,6 +115,20 @@ export default function Requests({ agent, onNavigate }) {
       setSelected(pendingIds);
     }
   }
+  async function handleExport(format, filter, filterType) {
+    setShowExport(false);
+    try {
+      const params = { limit: 10000 };
+      if (filter && filterType === "type") params.type = filter;
+      if (filter && !filterType) params.status = filter;
+      const res = await getRequests(params);
+      const data = formatRequestsForExport(res.requests || []);
+      const name = filter ? `requests_${filter}` : "requests_all";
+      exportToFile(data, name, format, "Requests");
+    } catch (err) {
+      setError("Export failed: " + err.message);
+    }
+  }
 
   const pendingRequests = requests.filter((r) => r.status === "pending");
   const allPendingSelected =
@@ -157,6 +173,110 @@ export default function Requests({ agent, onNavigate }) {
         >
           <i className="ti ti-refresh" style={{ fontSize: "15px" }} /> Refresh
         </button>
+        {/* Export dropdown */}
+        <div style={{ position: "relative" }}>
+          <button
+            className="btn-ghost"
+            style={{ width: "auto", padding: "8px 14px" }}
+            onClick={() => setShowExport((prev) => !prev)}
+          >
+            <i className="ti ti-download" style={{ fontSize: "15px" }} /> Export
+          </button>
+          {showExport && (
+            <div
+              style={{
+                position: "absolute",
+                right: 0,
+                top: "40px",
+                background: "#fff",
+                border: "1px solid #e8e8e8",
+                borderRadius: "8px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                zIndex: 10,
+                minWidth: "200px",
+              }}
+            >
+              {[
+                { label: "All requests (Excel)", format: "xlsx", filter: null },
+                { label: "All requests (CSV)", format: "csv", filter: null },
+                {
+                  label: "Pending only (Excel)",
+                  format: "xlsx",
+                  filter: "pending",
+                },
+                {
+                  label: "In Progress (Excel)",
+                  format: "xlsx",
+                  filter: "in_progress",
+                },
+                {
+                  label: "Completed (Excel)",
+                  format: "xlsx",
+                  filter: "completed",
+                },
+                {
+                  label: "Name Change (Excel)",
+                  format: "xlsx",
+                  filter: "nameChange",
+                  filterType: "type",
+                },
+                {
+                  label: "KYC Update (Excel)",
+                  format: "xlsx",
+                  filter: "kycUpdate",
+                  filterType: "type",
+                },
+                {
+                  label: "Address Update (Excel)",
+                  format: "xlsx",
+                  filter: "addressUpdate",
+                  filterType: "type",
+                },
+                {
+                  label: "Signature Update (Excel)",
+                  format: "xlsx",
+                  filter: "signatureUpdate",
+                  filterType: "type",
+                },
+              ].map((opt, idx) => (
+                <button
+                  key={idx}
+                  onClick={() =>
+                    handleExport(opt.format, opt.filter, opt.filterType)
+                  }
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "10px 14px",
+                    textAlign: "left",
+                    background: "none",
+                    border: "none",
+                    fontSize: "13px",
+                    color: "#1a1a1a",
+                    cursor: "pointer",
+                    borderBottom: idx < 8 ? "1px solid #f0f0f0" : "none",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "#fafafa")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "none")
+                  }
+                >
+                  <i
+                    className={`ti ${opt.format === "xlsx" ? "ti-file-spreadsheet" : "ti-file-text"}`}
+                    style={{
+                      fontSize: "13px",
+                      marginRight: "8px",
+                      color: opt.format === "xlsx" ? "#1a7a40" : "#2255cc",
+                    }}
+                  />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Success */}

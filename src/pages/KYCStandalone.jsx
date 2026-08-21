@@ -54,12 +54,15 @@ export default function KYCStandalone() {
     nin: "",
     occupation: "",
     maritalStatus: "",
+    address: "",
     comments: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [refNumber, setRefNumber] = useState("");
+  const [idFile, setIdFile] = useState(null);
+  const idInputRef = React.useRef();
 
   function handleField(key, value) {
     setFields((prev) => ({ ...prev, [key]: value }));
@@ -91,6 +94,7 @@ export default function KYCStandalone() {
       const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
       const referenceNumber = `KYC-${date}-${rand}`;
 
+      // Submit request
       const res = await fetch(`${API_URL}/api/requests/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,6 +108,27 @@ export default function KYCStandalone() {
           documents: [],
         }),
       });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      const requestId = data.requestId;
+
+      // Upload ID if provided
+      if (idFile && requestId) {
+        const formData = new FormData();
+        formData.append("requestId", requestId);
+        formData.append("documentTypes", JSON.stringify(["validId"]));
+        formData.append("files", idFile);
+
+        await fetch(`${API_URL}/api/uploads/documents`, {
+          method: "POST",
+          body: formData,
+        });
+      }
+
+      setRefNumber(data.referenceNumber || referenceNumber);
+      setSubmitted(true);
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -462,6 +487,91 @@ export default function KYCStandalone() {
                 inputMode="numeric"
                 disabled={loading}
               />
+            </div>
+            <div className="field-group">
+              <label>Residential address</label>
+              <input
+                type="text"
+                value={fields.address}
+                onChange={(e) => handleField("address", e.target.value)}
+                placeholder="House number, street, area, city"
+                disabled={loading}
+              />
+            </div>
+            {/* Means of ID upload */}
+            <div
+              style={{
+                borderTop: "1px solid #f0f0f0",
+                paddingTop: "16px",
+                marginBottom: "16px",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "11px",
+                  fontWeight: "500",
+                  color: "#6b6b6b",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.6px",
+                  marginBottom: "4px",
+                }}
+              >
+                Means of identification
+              </p>
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "#6b6b6b",
+                  marginBottom: "12px",
+                }}
+              >
+                Upload a valid government-issued ID — NIN slip, International
+                passport, Driver's licence, or Voter's card.
+              </p>
+              <input
+                ref={idInputRef}
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                style={{ display: "none" }}
+                onChange={(e) =>
+                  e.target.files?.[0] && setIdFile(e.target.files[0])
+                }
+              />
+              <div
+                onClick={() => idInputRef.current?.click()}
+                style={{
+                  border: `1.5px dashed ${idFile ? "#a8dfc0" : "#e8b4af"}`,
+                  borderRadius: "8px",
+                  padding: "20px",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  background: idFile ? "#f0faf4" : "#fdf1f0",
+                  transition: "all 0.2s",
+                }}
+              >
+                <i
+                  className={`ti ${idFile ? "ti-circle-check" : "ti-id"}`}
+                  style={{
+                    fontSize: "28px",
+                    color: idFile ? "#1a7a40" : "#C0392B",
+                    marginBottom: "8px",
+                    display: "block",
+                  }}
+                />
+                <p
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: "500",
+                    color: idFile ? "#1a7a40" : "#1a1a1a",
+                    marginBottom: "4px",
+                  }}
+                >
+                  {idFile ? idFile.name : "Click to upload your ID"}
+                </p>
+                <p style={{ fontSize: "12px", color: "#6b6b6b" }}>
+                  {idFile ? "Click to replace" : "JPG, PNG or PDF — max 10MB"}
+                </p>
+              </div>
             </div>
 
             {/* Comments */}

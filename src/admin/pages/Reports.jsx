@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
+import * as XLSX from "xlsx";
 import { getReports, getAgents } from "../services/adminApi";
+import {
+  exportToFile,
+  formatReportSummaryForExport,
+  formatReportByTypeForExport,
+  formatReportByAgentForExport,
+  formatReportByDayForExport,
+} from "../utils/exportData";
 
 const TYPE_LABELS = {
   nameChange: "Name Change",
@@ -22,6 +30,7 @@ export default function Reports({ agent }) {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showExport, setShowExport] = useState(false);
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
@@ -71,6 +80,34 @@ export default function Reports({ agent }) {
     window.print();
   }
 
+  function handleFullExport() {
+    if (!report) return;
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet(formatReportSummaryForExport(report)),
+      "Summary",
+    );
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet(formatReportByTypeForExport(report)),
+      "By Type",
+    );
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet(formatReportByAgentForExport(report)),
+      "By Agent",
+    );
+    XLSX.utils.book_append_sheet(
+      wb,
+      XLSX.utils.json_to_sheet(formatReportByDayForExport(report)),
+      "By Date",
+    );
+    const date = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, "full_report_" + date + ".xlsx");
+    setShowExport(false);
+  }
+
   const selectStyle = {
     padding: "8px 12px",
     fontSize: "13px",
@@ -81,9 +118,6 @@ export default function Reports({ agent }) {
     outline: "none",
   };
 
-  const inputStyle = { ...selectStyle };
-
-  // Simple bar chart component
   function BarChart({ data, labelKey, valueKey, colorFn }) {
     if (!data?.length)
       return (
@@ -128,7 +162,7 @@ export default function Reports({ agent }) {
               <div
                 style={{
                   height: "100%",
-                  width: `${max > 0 ? (item[valueKey] / max) * 100 : 0}%`,
+                  width: max > 0 ? (item[valueKey] / max) * 100 + "%" : "0%",
                   background: colorFn ? colorFn(item) : "#C0392B",
                   borderRadius: "4px",
                   transition: "width 0.6s ease",
@@ -141,7 +175,6 @@ export default function Reports({ agent }) {
     );
   }
 
-  // Summary stat card
   function SummaryCard({ label, value, color, icon }) {
     return (
       <div
@@ -159,14 +192,14 @@ export default function Reports({ agent }) {
               width: "36px",
               height: "36px",
               borderRadius: "8px",
-              background: `${color}15`,
+              background: color + "15",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               flexShrink: 0,
             }}
           >
-            <i className={`ti ${icon}`} style={{ fontSize: "18px", color }} />
+            <i className={"ti " + icon} style={{ fontSize: "18px", color }} />
           </div>
           <div>
             <p
@@ -211,15 +244,143 @@ export default function Reports({ agent }) {
             Analyse request trends, SLA performance and agent activity.
           </p>
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
+
+        {/* Action buttons */}
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          {/* Print button */}
           <button
             className="btn-ghost"
             style={{ width: "auto", padding: "8px 14px" }}
             onClick={handlePrint}
           >
-            <i className="ti ti-printer" style={{ fontSize: "15px" }} /> Print /
-            Export
+            <i className="ti ti-printer" style={{ fontSize: "15px" }} /> Print
           </button>
+
+          {/* Export dropdown */}
+          <div style={{ position: "relative" }}>
+            <button
+              className="btn-primary"
+              style={{ width: "auto", padding: "8px 14px" }}
+              onClick={() => setShowExport((prev) => !prev)}
+              disabled={!report}
+            >
+              <i className="ti ti-download" style={{ fontSize: "15px" }} />{" "}
+              Export
+            </button>
+
+            {showExport && report && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "44px",
+                  background: "#fff",
+                  border: "1px solid #e8e8e8",
+                  borderRadius: "8px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  zIndex: 100,
+                  minWidth: "230px",
+                }}
+              >
+                {[
+                  {
+                    label: "Summary (Excel)",
+                    fn: () => {
+                      exportToFile(
+                        formatReportSummaryForExport(report),
+                        "report_summary",
+                        "xlsx",
+                        "Summary",
+                      );
+                      setShowExport(false);
+                    },
+                  },
+                  {
+                    label: "Summary (CSV)",
+                    fn: () => {
+                      exportToFile(
+                        formatReportSummaryForExport(report),
+                        "report_summary",
+                        "csv",
+                        "Summary",
+                      );
+                      setShowExport(false);
+                    },
+                  },
+                  {
+                    label: "By request type (Excel)",
+                    fn: () => {
+                      exportToFile(
+                        formatReportByTypeForExport(report),
+                        "report_by_type",
+                        "xlsx",
+                        "By Type",
+                      );
+                      setShowExport(false);
+                    },
+                  },
+                  {
+                    label: "By agent (Excel)",
+                    fn: () => {
+                      exportToFile(
+                        formatReportByAgentForExport(report),
+                        "report_by_agent",
+                        "xlsx",
+                        "By Agent",
+                      );
+                      setShowExport(false);
+                    },
+                  },
+                  {
+                    label: "By date (Excel)",
+                    fn: () => {
+                      exportToFile(
+                        formatReportByDayForExport(report),
+                        "report_by_date",
+                        "xlsx",
+                        "By Date",
+                      );
+                      setShowExport(false);
+                    },
+                  },
+                  { label: "Full report (Excel)", fn: handleFullExport },
+                ].map((opt, idx) => (
+                  <button
+                    key={idx}
+                    onClick={opt.fn}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      padding: "10px 14px",
+                      textAlign: "left",
+                      background: "none",
+                      border: "none",
+                      fontSize: "13px",
+                      color: "#1a1a1a",
+                      cursor: "pointer",
+                      borderBottom: idx < 5 ? "1px solid #f0f0f0" : "none",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = "#fafafa")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = "none")
+                    }
+                  >
+                    <i
+                      className="ti ti-file-spreadsheet"
+                      style={{
+                        fontSize: "13px",
+                        marginRight: "8px",
+                        color: "#1a7a40",
+                      }}
+                    />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -269,7 +430,7 @@ export default function Reports({ agent }) {
               type="date"
               value={filters.startDate}
               onChange={(e) => handleFilter("startDate", e.target.value)}
-              style={inputStyle}
+              style={selectStyle}
             />
           </div>
           <div>
@@ -287,7 +448,7 @@ export default function Reports({ agent }) {
               type="date"
               value={filters.endDate}
               onChange={(e) => handleFilter("endDate", e.target.value)}
-              style={inputStyle}
+              style={selectStyle}
             />
           </div>
           <div>
@@ -441,7 +602,7 @@ export default function Reports({ agent }) {
             />
           </div>
 
-          {/* Key metrics row */}
+          {/* Key metrics */}
           <div
             style={{
               display: "grid",
@@ -497,7 +658,7 @@ export default function Reports({ agent }) {
                 <div
                   style={{
                     height: "100%",
-                    width: `${report.slaComplianceRate}%`,
+                    width: report.slaComplianceRate + "%",
                     background:
                       report.slaComplianceRate >= 80
                         ? "#1a7a40"
@@ -505,7 +666,6 @@ export default function Reports({ agent }) {
                           ? "#b36a00"
                           : "#C0392B",
                     borderRadius: "4px",
-                    transition: "width 0.6s ease",
                   }}
                 />
               </div>
@@ -555,7 +715,7 @@ export default function Reports({ agent }) {
               marginBottom: "20px",
             }}
           >
-            {/* Requests by type */}
+            {/* By type */}
             <div
               style={{
                 background: "#fff",
@@ -586,7 +746,7 @@ export default function Reports({ agent }) {
               />
             </div>
 
-            {/* Agent performance */}
+            {/* By agent */}
             <div
               style={{
                 background: "#fff",
@@ -627,7 +787,7 @@ export default function Reports({ agent }) {
                   >
                     <thead>
                       <tr style={{ background: "#fafafa" }}>
-                        {["Agent", "Total", "Completed", "SLA breached"].map(
+                        {["Agent", "Total", "Completed", "SLA Breached"].map(
                           (h) => (
                             <th
                               key={h}
@@ -690,7 +850,7 @@ export default function Reports({ agent }) {
             </div>
           </div>
 
-          {/* Requests over time */}
+          {/* By day */}
           <div
             style={{
               background: "#fff",
@@ -727,7 +887,7 @@ export default function Reports({ agent }) {
                     display: "flex",
                     alignItems: "flex-end",
                     gap: "6px",
-                    minWidth: `${report.byDay.length * 40}px`,
+                    minWidth: report.byDay.length * 40 + "px",
                     height: "120px",
                     padding: "0 4px",
                   }}
@@ -750,15 +910,14 @@ export default function Reports({ agent }) {
                           {day.count}
                         </span>
                         <div
-                          title={`${day.date}: ${day.count} requests`}
+                          title={day.date + ": " + day.count + " requests"}
                           style={{
                             width: "100%",
-                            height: `${height}%`,
+                            height: height + "%",
                             minHeight: "4px",
                             background: "#C0392B",
                             borderRadius: "3px 3px 0 0",
                             opacity: 0.8,
-                            transition: "height 0.4s ease",
                           }}
                         />
                         <span
