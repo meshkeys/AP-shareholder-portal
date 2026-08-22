@@ -63,6 +63,8 @@ export default function KYCStandalone() {
   const [refNumber, setRefNumber] = useState("");
   const [idFile, setIdFile] = useState(null);
   const idInputRef = React.useRef();
+  const [signatureFile, setSignatureFile] = useState(null);
+  const signatureInputRef = React.useRef();
 
   function handleField(key, value) {
     setFields((prev) => ({ ...prev, [key]: value }));
@@ -114,12 +116,25 @@ export default function KYCStandalone() {
 
       const requestId = data.requestId;
 
-      // Upload ID if provided
-      if (idFile && requestId) {
+      // Upload documents if provided
+      const filesToUpload = [];
+      const typesToUpload = [];
+
+      if (idFile) {
+        filesToUpload.push(idFile);
+        typesToUpload.push("validId");
+      }
+
+      if (signatureFile) {
+        filesToUpload.push(signatureFile);
+        typesToUpload.push("signature");
+      }
+
+      if (filesToUpload.length > 0 && requestId) {
         const formData = new FormData();
         formData.append("requestId", requestId);
-        formData.append("documentTypes", JSON.stringify(["validId"]));
-        formData.append("files", idFile);
+        formData.append("documentTypes", JSON.stringify(typesToUpload));
+        filesToUpload.forEach((file) => formData.append("files", file));
 
         await fetch(`${API_URL}/api/uploads/documents`, {
           method: "POST",
@@ -567,6 +582,83 @@ export default function KYCStandalone() {
                 </p>
                 <p style={{ fontSize: "12px", color: "#6b6b6b" }}>
                   {idFile ? "Click to replace" : "JPG, PNG or PDF — max 10MB"}
+                </p>
+              </div>
+            </div>
+            {/* Signature upload */}
+            <div
+              style={{
+                borderTop: "1px solid #f0f0f0",
+                paddingTop: "16px",
+                marginBottom: "16px",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "11px",
+                  fontWeight: "500",
+                  color: "#6b6b6b",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.6px",
+                  marginBottom: "4px",
+                }}
+              >
+                Signature
+              </p>
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "#6b6b6b",
+                  marginBottom: "12px",
+                }}
+              >
+                Upload a clear image of your signature on a plain white
+                background.
+              </p>
+              <input
+                ref={signatureInputRef}
+                type="file"
+                accept=".jpg,.jpeg,.png"
+                style={{ display: "none" }}
+                onChange={(e) =>
+                  e.target.files?.[0] && setSignatureFile(e.target.files[0])
+                }
+              />
+              <div
+                onClick={() => signatureInputRef.current?.click()}
+                style={{
+                  border: `1.5px dashed ${signatureFile ? "#a8dfc0" : "#e0e0e0"}`,
+                  borderRadius: "8px",
+                  padding: "20px",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  background: signatureFile ? "#f0faf4" : "#fafafa",
+                  transition: "all 0.2s",
+                }}
+              >
+                <i
+                  className={`ti ${signatureFile ? "ti-circle-check" : "ti-writing"}`}
+                  style={{
+                    fontSize: "28px",
+                    color: signatureFile ? "#1a7a40" : "#6b6b6b",
+                    marginBottom: "8px",
+                    display: "block",
+                  }}
+                />
+                <p
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: "500",
+                    color: signatureFile ? "#1a7a40" : "#1a1a1a",
+                    marginBottom: "4px",
+                  }}
+                >
+                  {signatureFile
+                    ? signatureFile.name
+                    : "Click to upload your signature"}
+                </p>
+                <p style={{ fontSize: "12px", color: "#6b6b6b" }}>
+                  {signatureFile ? "Click to replace" : "JPG or PNG — max 10MB"}
                 </p>
               </div>
             </div>
