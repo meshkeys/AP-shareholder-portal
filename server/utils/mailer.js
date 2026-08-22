@@ -94,4 +94,9 @@ async function sendPasswordResetEmail(toEmail, agentName, resetUrl) {
   });
 }
 
-module.exports = { sendOTPEmail, sendStatusUpdateEmail, sendAgentWelcomeEmail };
+module.exports = {
+  sendOTPEmail,
+  sendStatusUpdateEmail,
+  sendAgentWelcomeEmail,
+  sendPasswordResetEmail,
+};
