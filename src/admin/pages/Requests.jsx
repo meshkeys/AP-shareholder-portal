@@ -49,7 +49,7 @@ export default function Requests({ agent, onNavigate }) {
   useEffect(() => {
     loadRequests();
     if (canAssign) loadAgents();
-  }, [page, filters]);
+  }, [page, filters, dateFrom, dateTo]);
 
   async function loadRequests() {
     setLoading(true);
@@ -117,38 +117,29 @@ export default function Requests({ agent, onNavigate }) {
       setSelected(allIds);
     }
   }
-  async function handleExport(format, filter, filterType) {
+  async function handleExport(format) {
     setShowExport(false);
     try {
-      // Use current page filters as base
       const params = { limit: 10000 };
-
-      // Apply current page filters
       if (filters.status) params.status = filters.status;
       if (filters.type) params.type = filters.type;
       if (dateFrom) params.startDate = dateFrom;
       if (dateTo) params.endDate = dateTo;
-
-      // Override with specific export filter if provided
-      if (filter && filterType === "type") params.type = filter;
-      if (filter && !filterType) params.status = filter;
-
       const res = await getRequests(params);
       const data = formatRequestsForExport(res.requests || []);
 
       // Build filename from active filters
       const parts = ["requests"];
-      if (params.status) parts.push(params.status);
-      if (params.type) parts.push(params.type);
-      if (params.startDate) parts.push(params.startDate);
-      if (params.endDate) parts.push("to_" + params.endDate);
+      if (filters.status) parts.push(filters.status);
+      if (filters.type) parts.push(filters.type);
+      if (dateFrom) parts.push(dateFrom);
+      if (dateTo) parts.push("to_" + dateTo);
 
       exportToFile(data, parts.join("_"), format, "Requests");
     } catch (err) {
       setError("Export failed: " + err.message);
     }
   }
-
   const allSelected =
     requests.length > 0 && selected.length === requests.length;
   const totalPages = Math.ceil(total / limit);
@@ -215,53 +206,12 @@ export default function Requests({ agent, onNavigate }) {
               }}
             >
               {[
-                { label: "All requests (Excel)", format: "xlsx", filter: null },
-                { label: "All requests (CSV)", format: "csv", filter: null },
-                {
-                  label: "Pending only (Excel)",
-                  format: "xlsx",
-                  filter: "pending",
-                },
-                {
-                  label: "In Progress (Excel)",
-                  format: "xlsx",
-                  filter: "in_progress",
-                },
-                {
-                  label: "Completed (Excel)",
-                  format: "xlsx",
-                  filter: "completed",
-                },
-                {
-                  label: "Name Change (Excel)",
-                  format: "xlsx",
-                  filter: "nameChange",
-                  filterType: "type",
-                },
-                {
-                  label: "KYC Update (Excel)",
-                  format: "xlsx",
-                  filter: "kycUpdate",
-                  filterType: "type",
-                },
-                {
-                  label: "Address Update (Excel)",
-                  format: "xlsx",
-                  filter: "addressUpdate",
-                  filterType: "type",
-                },
-                {
-                  label: "Signature Update (Excel)",
-                  format: "xlsx",
-                  filter: "signatureUpdate",
-                  filterType: "type",
-                },
+                { label: "Export as Excel", format: "xlsx" },
+                { label: "Export as CSV", format: "csv" },
               ].map((opt, idx) => (
                 <button
                   key={idx}
-                  onClick={() =>
-                    handleExport(opt.format, opt.filter, opt.filterType)
-                  }
+                  onClick={() => handleExport(opt.format)}
                   style={{
                     display: "block",
                     width: "100%",
@@ -272,7 +222,7 @@ export default function Requests({ agent, onNavigate }) {
                     fontSize: "13px",
                     color: "#1a1a1a",
                     cursor: "pointer",
-                    borderBottom: idx < 8 ? "1px solid #f0f0f0" : "none",
+                    borderBottom: idx === 0 ? "1px solid #f0f0f0" : "none",
                   }}
                   onMouseEnter={(e) =>
                     (e.currentTarget.style.background = "#fafafa")
@@ -290,8 +240,55 @@ export default function Requests({ agent, onNavigate }) {
                     }}
                   />
                   {opt.label}
+                  {(filters.status || filters.type || dateFrom || dateTo) && (
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        color: "#6b6b6b",
+                        marginLeft: "6px",
+                      }}
+                    >
+                      (filtered)
+                    </span>
+                  )}
                 </button>
               ))}
+
+              {/* Show active filters info */}
+              {(filters.status || filters.type || dateFrom || dateTo) && (
+                <div
+                  style={{
+                    padding: "8px 14px",
+                    background: "#fafafa",
+                    borderTop: "1px solid #f0f0f0",
+                    borderRadius: "0 0 8px 8px",
+                  }}
+                >
+                  <p style={{ fontSize: "11px", color: "#6b6b6b", margin: 0 }}>
+                    Exporting with active filters:
+                    {filters.status && (
+                      <span style={{ color: "#C0392B", marginLeft: "4px" }}>
+                        {filters.status}
+                      </span>
+                    )}
+                    {filters.type && (
+                      <span style={{ color: "#C0392B", marginLeft: "4px" }}>
+                        {filters.type}
+                      </span>
+                    )}
+                    {dateFrom && (
+                      <span style={{ color: "#C0392B", marginLeft: "4px" }}>
+                        from {dateFrom}
+                      </span>
+                    )}
+                    {dateTo && (
+                      <span style={{ color: "#C0392B", marginLeft: "4px" }}>
+                        to {dateTo}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
