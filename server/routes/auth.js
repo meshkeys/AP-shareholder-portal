@@ -227,7 +227,7 @@ router.post("/forgot-password", async (req, res) => {
       .eq("id", agent.id);
 
     // Send reset email
-    const resetUrl = `${process.env.FRONTEND_URL}/admin/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL}/admin?token=${resetToken}`;
     await sendPasswordResetEmail(agent.email, agent.full_name, resetUrl);
 
     res.json({
