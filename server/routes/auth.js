@@ -3,7 +3,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const { supabase } = require("../utils/supabase");
-const { sendAgentWelcomeEmail } = require("../utils/mailer");
 const {
   sendAgentWelcomeEmail,
   sendPasswordResetEmail,
