@@ -84,15 +84,11 @@ router.get("/stats/summary", authenticate, async (req, res) => {
   try {
     let query = supabase
       .from("requests")
-      .select("*, agents!requests_assigned_to_fkey(id, full_name, email)", {
-        count: "exact",
-      })
-      .order("created_at", { ascending: false })
-      .range((page - 1) * limit, page * limit - 1);
+      .select(
+        "status, request_type, assigned_to, sla_assign_breached, sla_response_breached, sla_resolve_breached",
+      );
 
     if (role === "agent") query = query.eq("assigned_to", agentId);
-    if (status) query = query.eq("status", status);
-    if (type) query = query.eq("request_type", type);
 
     const { data, error } = await query;
     if (error) throw error;
