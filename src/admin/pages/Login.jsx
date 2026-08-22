@@ -139,10 +139,7 @@ export default function Login({ onLogin }) {
                     alignItems: "center",
                   }}
                 >
-                  <i
-                    className={`ti ${showPass ? "ti-eye-off" : "ti-eye"}`}
-                    style={{ fontSize: "18px" }}
-                  />
+                  {showPass ? "HIDE" : "SHOW"}
                 </button>
               </div>
             </div>
