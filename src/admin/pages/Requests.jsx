@@ -106,13 +106,11 @@ export default function Requests({ agent, onNavigate }) {
   }
 
   function toggleSelectAll() {
-    const pendingIds = requests
-      .filter((r) => r.status === "pending")
-      .map((r) => r.id);
-    if (selected.length === pendingIds.length) {
+    const allIds = requests.map((r) => r.id);
+    if (selected.length === allIds.length) {
       setSelected([]);
     } else {
-      setSelected(pendingIds);
+      setSelected(allIds);
     }
   }
   async function handleExport(format, filter, filterType) {
@@ -130,9 +128,8 @@ export default function Requests({ agent, onNavigate }) {
     }
   }
 
-  const pendingRequests = requests.filter((r) => r.status === "pending");
-  const allPendingSelected =
-    pendingRequests.length > 0 && selected.length === pendingRequests.length;
+  const allSelected =
+    requests.length > 0 && selected.length === requests.length;
   const totalPages = Math.ceil(total / limit);
 
   const selectStyle = {
@@ -399,6 +396,9 @@ export default function Requests({ agent, onNavigate }) {
             />
             {selected.length} ticket{selected.length !== 1 ? "s" : ""} selected
           </p>
+          <p style={{ fontSize: "11px", color: "#9b9b9b" }}>
+            Assigning will reassign tickets already assigned to other agents
+          </p>
           <select
             value={bulkAgent}
             onChange={(e) => setBulkAgent(e.target.value)}
@@ -497,14 +497,14 @@ export default function Requests({ agent, onNavigate }) {
                   <th style={{ padding: "12px 16px", width: "40px" }}>
                     <input
                       type="checkbox"
-                      checked={allPendingSelected}
+                      checked={allSelected}
                       onChange={toggleSelectAll}
                       style={{
                         cursor: "pointer",
                         width: "15px",
                         height: "15px",
                       }}
-                      title="Select all pending"
+                      title="Select all"
                     />
                   </th>
                 )}
@@ -594,18 +594,16 @@ export default function Requests({ agent, onNavigate }) {
                       {/* Checkbox — only for pending tickets */}
                       {canAssign && (
                         <td style={{ padding: "14px 16px" }}>
-                          {isPending && (
-                            <input
-                              type="checkbox"
-                              checked={isSelected}
-                              onChange={() => toggleSelect(req.id)}
-                              style={{
-                                cursor: "pointer",
-                                width: "15px",
-                                height: "15px",
-                              }}
-                            />
-                          )}
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelect(req.id)}
+                            style={{
+                              cursor: "pointer",
+                              width: "15px",
+                              height: "15px",
+                            }}
+                          />
                         </td>
                       )}
 

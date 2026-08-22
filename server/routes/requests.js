@@ -462,11 +462,10 @@ router.post("/bulk-assign", authenticate, async (req, res) => {
       .from("requests")
       .update({
         assigned_to: agentId,
-        status: "assigned",
         assigned_at: now,
       })
       .in("id", requestIds)
-      .in("status", ["pending"]); // only assign pending tickets
+      .not("status", "in", '("completed","approved",)');
 
     if (error) throw error;
 
