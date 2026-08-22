@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { login, saveSession } from "../services/adminApi";
 
-export default function Login({ onLogin }) {
+export default function Login({ onLogin, onForgotPassword }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -142,6 +142,22 @@ export default function Login({ onLogin }) {
                   {showPass ? "HIDE" : "SHOW"}
                 </button>
               </div>
+            </div>
+            <div style={{ textAlign: "right", marginBottom: "8px" }}>
+              <button
+                type="button"
+                onClick={onForgotPassword}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#C0392B",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                Forgot password?
+              </button>
             </div>
 
             {/* Submit */}

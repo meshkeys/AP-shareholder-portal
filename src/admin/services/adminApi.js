@@ -321,3 +321,21 @@ export async function revokeApproval(requestId, reason) {
   );
   return handleResponse(res);
 }
+
+export async function forgotPassword(email) {
+  const res = await fetch(`${BASE_URL}/api/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  return handleResponse(res);
+}
+
+export async function resetPassword(token, newPassword) {
+  const res = await fetch(`${BASE_URL}/api/auth/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, newPassword }),
+  });
+  return handleResponse(res);
+}

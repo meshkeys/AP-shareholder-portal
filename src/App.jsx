@@ -26,6 +26,9 @@ import Reports from "./admin/pages/Reports";
 import Settings from "./admin/pages/Settings";
 import { getSession, clearSession } from "./admin/services/adminApi";
 import KYCStandalone from "./pages/KYCStandalone";
+import ForgotPassword from "./admin/pages/ForgotPassword";
+import ResetPassword from "./admin/pages/ResetPassword";
+
 console.log("Current path:", window.location.pathname);
 
 const isAdminRoute = window.location.pathname.startsWith("/admin");
@@ -36,6 +39,7 @@ export default function App() {
   const [adminAgent, setAdminAgent] = useState(null);
   const [adminPage, setAdminPage] = useState("dashboard");
   const [selectedRequestId, setSelectedRequestId] = useState(null);
+  const [adminView, setAdminView] = useState("login"); // login | forgot | reset
 
   // ── Portal state ─────────────────────────────────────────────────────────────
   const [step, setStep] = useState(1);
@@ -238,6 +242,33 @@ export default function App() {
         </div>
       </div>
     );
+  }
+
+  if (isAdminRoute) {
+    // Get reset token from URL if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetToken = urlParams.get("token");
+
+    if (!adminAgent) {
+      if (resetToken) {
+        return (
+          <ResetPassword
+            token={resetToken}
+            onDone={() => (window.location.href = "/admin")}
+          />
+        );
+      }
+      if (adminView === "forgot") {
+        return <ForgotPassword onBack={() => setAdminView("login")} />;
+      }
+      return (
+        <Login
+          onLogin={(agent) => setAdminAgent(agent)}
+          onForgotPassword={() => setAdminView("forgot")}
+        />
+      );
+    }
+    // ... rest of admin dashboard
   }
 
   // ── SHAREHOLDER PORTAL ────────────────────────────────────────────────────
