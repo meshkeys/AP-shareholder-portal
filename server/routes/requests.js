@@ -228,11 +228,24 @@ router.patch("/:id/assign", authenticate, async (req, res) => {
       .eq("id", agentId)
       .single();
 
+    // Get current request to check status
+    const { data: currentRequest } = await supabase
+      .from("requests")
+      .select("status")
+      .eq("id", id)
+      .single();
+
+    // Only reset to assigned if currently pending or assigned
+    // Keep in_progress status if already being worked on
+    const newStatus = ["pending", "assigned"].includes(currentRequest?.status)
+      ? "assigned"
+      : currentRequest?.status;
+
     const { data: request, error } = await supabase
       .from("requests")
       .update({
         assigned_to: agentId,
-        status: "assigned",
+        status: newStatus,
         assigned_at: new Date().toISOString(),
       })
       .eq("id", id)

@@ -7,6 +7,9 @@ export default function ChangePassword({ agent, onDone }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   function validate() {
     if (!currentPassword) return "Enter your temporary password.";
@@ -116,50 +119,119 @@ export default function ChangePassword({ agent, onDone }) {
           )}
 
           <form onSubmit={handleSubmit} noValidate>
+            {/* Temporary password */}
             <div className="field-group">
               <label>Temporary password</label>
-              <input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => {
-                  setCurrentPassword(e.target.value);
-                  setError("");
-                }}
-                placeholder="Enter temporary password"
-                style={inputStyle}
-                disabled={loading}
-                autoFocus
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showCurrent ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => {
+                    setCurrentPassword(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="Enter temporary password"
+                  style={{ ...inputStyle, paddingRight: "40px" }}
+                  disabled={loading}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrent((p) => !p)}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#6b6b6b",
+                    padding: 0,
+                  }}
+                >
+                  <i
+                    className={`ti ${showCurrent ? "ti-eye-off" : "ti-eye"}`}
+                    style={{ fontSize: "16px" }}
+                  />
+                </button>
+              </div>
             </div>
 
+            {/* New password */}
             <div className="field-group">
               <label>New password</label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => {
-                  setNewPassword(e.target.value);
-                  setError("");
-                }}
-                placeholder="At least 8 characters"
-                style={inputStyle}
-                disabled={loading}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showNew ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => {
+                    setNewPassword(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="At least 8 characters"
+                  style={{ ...inputStyle, paddingRight: "40px" }}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNew((p) => !p)}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#6b6b6b",
+                    padding: 0,
+                  }}
+                >
+                  <i
+                    className={`ti ${showNew ? "ti-eye-off" : "ti-eye"}`}
+                    style={{ fontSize: "16px" }}
+                  />
+                </button>
+              </div>
             </div>
 
+            {/* Confirm password */}
             <div className="field-group">
               <label>Confirm new password</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => {
-                  setConfirmPassword(e.target.value);
-                  setError("");
-                }}
-                placeholder="Repeat new password"
-                style={inputStyle}
-                disabled={loading}
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="Repeat new password"
+                  style={{ ...inputStyle, paddingRight: "40px" }}
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((p) => !p)}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "#6b6b6b",
+                    padding: 0,
+                  }}
+                >
+                  <i
+                    className={`ti ${showConfirm ? "ti-eye-off" : "ti-eye"}`}
+                    style={{ fontSize: "16px" }}
+                  />
+                </button>
+              </div>
             </div>
 
             <button

@@ -648,7 +648,8 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                     color: "#C0392B",
                   }}
                 />
-                Assign request
+                {request.assigned_to ? "Reassign request" : "Assign request"}
+                Assign Request
               </h3>
               <select
                 value={selectedAgent}
