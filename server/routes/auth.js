@@ -60,6 +60,7 @@ router.post("/login", async (req, res) => {
         fullName: agent.full_name,
         email: agent.email,
         role: agent.role,
+        mustChangePassword: agent.must_change_password || false,
       },
     });
   } catch (err) {
