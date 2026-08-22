@@ -120,7 +120,7 @@ export default function Login({ onLogin }) {
                   placeholder="Enter your password"
                   autoComplete="current-password"
                   disabled={loading}
-                  style={{ paddingRight: "40px", width: "100%" }}
+                  style={{ paddingRight: "40px" }}
                 />
                 <button
                   type="button"
@@ -135,11 +135,13 @@ export default function Login({ onLogin }) {
                     cursor: "pointer",
                     color: "#6b6b6b",
                     padding: 0,
+                    display: "flex",
+                    alignItems: "center",
                   }}
                 >
                   <i
                     className={`ti ${showPass ? "ti-eye-off" : "ti-eye"}`}
-                    style={{ fontSize: "16px" }}
+                    style={{ fontSize: "18px" }}
                   />
                 </button>
               </div>
