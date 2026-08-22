@@ -186,7 +186,12 @@ export default function App() {
   // ── ADMIN DASHBOARD ───────────────────────────────────────────────────────
   if (isAdminRoute) {
     if (!adminAgent) {
-      return <Login onLogin={(agent) => setAdminAgent(agent)} />;
+      return (
+        <Login
+          onLogin={(agent) => setAdminAgent(agent)}
+          onForgotPassword={() => setAdminView("forgot")}
+        />
+      );
     }
 
     if (adminAgent.mustChangePassword) {
