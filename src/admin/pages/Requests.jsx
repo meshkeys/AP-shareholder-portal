@@ -38,6 +38,8 @@ export default function Requests({ agent, onNavigate }) {
   const [bulkAgent, setBulkAgent] = useState("");
   const [bulkAssigning, setBulkAssigning] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const limit = 15;
 
   const canAssign = ["admin", "supervisor", "lead_supervisor"].includes(
@@ -55,6 +57,8 @@ export default function Requests({ agent, onNavigate }) {
       const params = { page, limit };
       if (filters.status) params.status = filters.status;
       if (filters.type) params.type = filters.type;
+      if (dateFrom) params.startDate = dateFrom;
+      if (dateTo) params.endDate = dateTo;
       const res = await getRequests(params);
       setRequests(res.requests || []);
       setTotal(res.total || 0);
@@ -116,13 +120,30 @@ export default function Requests({ agent, onNavigate }) {
   async function handleExport(format, filter, filterType) {
     setShowExport(false);
     try {
+      // Use current page filters as base
       const params = { limit: 10000 };
+
+      // Apply current page filters
+      if (filters.status) params.status = filters.status;
+      if (filters.type) params.type = filters.type;
+      if (dateFrom) params.startDate = dateFrom;
+      if (dateTo) params.endDate = dateTo;
+
+      // Override with specific export filter if provided
       if (filter && filterType === "type") params.type = filter;
       if (filter && !filterType) params.status = filter;
+
       const res = await getRequests(params);
       const data = formatRequestsForExport(res.requests || []);
-      const name = filter ? `requests_${filter}` : "requests_all";
-      exportToFile(data, name, format, "Requests");
+
+      // Build filename from active filters
+      const parts = ["requests"];
+      if (params.status) parts.push(params.status);
+      if (params.type) parts.push(params.type);
+      if (params.startDate) parts.push(params.startDate);
+      if (params.endDate) parts.push("to_" + params.endDate);
+
+      exportToFile(data, parts.join("_"), format, "Requests");
     } catch (err) {
       setError("Export failed: " + err.message);
     }
@@ -329,8 +350,51 @@ export default function Requests({ agent, onNavigate }) {
           gap: "10px",
           marginBottom: "16px",
           flexWrap: "wrap",
+          alignItems: "flex-end",
         }}
       >
+        <div>
+          <label
+            style={{
+              fontSize: "11px",
+              color: "#6b6b6b",
+              display: "block",
+              marginBottom: "4px",
+            }}
+          >
+            From
+          </label>
+          <input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => {
+              setDateFrom(e.target.value);
+              setPage(1);
+            }}
+            style={selectStyle}
+          />
+        </div>
+        <div>
+          <label
+            style={{
+              fontSize: "11px",
+              color: "#6b6b6b",
+              display: "block",
+              marginBottom: "4px",
+            }}
+          >
+            To
+          </label>
+          <input
+            type="date"
+            value={dateTo}
+            onChange={(e) => {
+              setDateTo(e.target.value);
+              setPage(1);
+            }}
+            style={selectStyle}
+          />
+        </div>
         <select
           value={filters.status}
           onChange={(e) => handleFilter("status", e.target.value)}
@@ -357,6 +421,8 @@ export default function Requests({ agent, onNavigate }) {
           <button
             onClick={() => {
               setFilters({ status: "", type: "" });
+              setDateFrom("");
+              setDateTo("");
               setPage(1);
             }}
             style={{
