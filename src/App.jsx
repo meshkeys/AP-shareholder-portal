@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import StepBar from "./components/StepBar";
+import EmailEntry, { ProductCarousel } from "./pages/EmailEntry";
 import OTPVerify from "./pages/OTPVerify";
 import ProfileReview from "./pages/ProfileReview";
 import UpdateTypeSelector from "./pages/UpdateTypeSelector";
@@ -11,8 +12,7 @@ import SignatureForm from "./pages/SignatureForm";
 import NUBANChange from "./pages/NUBANChange";
 import ReviewSummary from "./pages/ReviewSummary";
 import Success from "./pages/Success";
-import EmailEntry, { ProductCarousel } from "./pages/EmailEntry";
-import ChangePassword from "./admin/pages/ChangePassword";
+import KYCStandalone from "./pages/KYCStandalone";
 
 // Admin imports
 import AdminNavbar from "./admin/components/AdminNavbar";
@@ -24,12 +24,10 @@ import Agents from "./admin/pages/Agents";
 import Performance from "./admin/pages/Performance";
 import Reports from "./admin/pages/Reports";
 import Settings from "./admin/pages/Settings";
-import { getSession, clearSession } from "./admin/services/adminApi";
-import KYCStandalone from "./pages/KYCStandalone";
+import ChangePassword from "./admin/pages/ChangePassword";
 import ForgotPassword from "./admin/pages/ForgotPassword";
 import ResetPassword from "./admin/pages/ResetPassword";
-
-console.log("Current path:", window.location.pathname);
+import { getSession } from "./admin/services/adminApi";
 
 const isAdminRoute = window.location.pathname.startsWith("/admin");
 const isKYCRoute = window.location.pathname.startsWith("/kyc-update");
@@ -38,8 +36,8 @@ export default function App() {
   // ── Admin state ─────────────────────────────────────────────────────────────
   const [adminAgent, setAdminAgent] = useState(null);
   const [adminPage, setAdminPage] = useState("dashboard");
+  const [adminView, setAdminView] = useState("login");
   const [selectedRequestId, setSelectedRequestId] = useState(null);
-  const [adminView, setAdminView] = useState("login"); // login | forgot | reset
 
   // ── Portal state ─────────────────────────────────────────────────────────────
   const [step, setStep] = useState(1);
@@ -54,9 +52,7 @@ export default function App() {
   useEffect(() => {
     if (isAdminRoute) {
       const session = getSession();
-      if (session) {
-        setAdminAgent(session.agent);
-      }
+      if (session) setAdminAgent(session.agent);
     }
   }, []);
 
@@ -142,50 +138,31 @@ export default function App() {
     }
   }
 
-  // ── KYC DIRECT ROUTE ─────────────────────────────────────────────────────────
-  /* if (isKYCRoute) {
-    return (
-      <div
-        style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
-      >
-        <Navbar />
-        <main
-          style={{
-            flex: 1,
-            padding: "32px 24px",
-            maxWidth: "560px",
-            margin: "0 auto",
-            width: "100%",
-          }}
-        >
-          <KYCForm
-            profile={{}}
-            onNext={onFormDone}
-            onBack={() => (window.location.href = "/")}
-          />
-        </main>
-        <footer
-          style={{
-            textAlign: "center",
-            fontSize: "12px",
-            color: "#b0b0b0",
-            padding: "16px 24px",
-            borderTop: "1px solid #e8e8e8",
-            background: "#fff",
-          }}
-        >
-          ShareReg Portal &nbsp;·&nbsp; Shareholder Registry Services
-        </footer>
-      </div>
-    );
-  }
-*/
+  // ── KYC standalone route ──────────────────────────────────────────────────
   if (isKYCRoute) {
     return <KYCStandalone />;
   }
+
   // ── ADMIN DASHBOARD ───────────────────────────────────────────────────────
   if (isAdminRoute) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const resetToken = urlParams.get("token");
+
     if (!adminAgent) {
+      // Show reset password page if token in URL
+      if (resetToken) {
+        return (
+          <ResetPassword
+            token={resetToken}
+            onDone={() => (window.location.href = "/admin")}
+          />
+        );
+      }
+      // Show forgot password page
+      if (adminView === "forgot") {
+        return <ForgotPassword onBack={() => setAdminView("login")} />;
+      }
+      // Show login page
       return (
         <Login
           onLogin={(agent) => setAdminAgent(agent)}
@@ -194,6 +171,7 @@ export default function App() {
       );
     }
 
+    // Force password change on first login
     if (adminAgent.mustChangePassword) {
       return (
         <ChangePassword
@@ -204,6 +182,8 @@ export default function App() {
         />
       );
     }
+
+    // Main admin dashboard
     return (
       <div
         style={{
@@ -222,11 +202,9 @@ export default function App() {
           {adminPage === "dashboard" && (
             <Dashboard agent={adminAgent} onNavigate={handleAdminNavigate} />
           )}
-
           {adminPage === "requests" && (
             <Requests agent={adminAgent} onNavigate={handleAdminNavigate} />
           )}
-
           {adminPage === "requestDetail" && selectedRequestId && (
             <RequestDetail
               agent={adminAgent}
@@ -234,46 +212,15 @@ export default function App() {
               onBack={() => setAdminPage("requests")}
             />
           )}
-
           {adminPage === "performance" && (
             <Performance agent={adminAgent} onNavigate={handleAdminNavigate} />
           )}
-
           {adminPage === "reports" && <Reports agent={adminAgent} />}
-
           {adminPage === "agents" && <Agents agent={adminAgent} />}
-
           {adminPage === "settings" && <Settings agent={adminAgent} />}
         </div>
       </div>
     );
-  }
-
-  if (isAdminRoute) {
-    // Get reset token from URL if present
-    const urlParams = new URLSearchParams(window.location.search);
-    const resetToken = urlParams.get("token");
-
-    if (!adminAgent) {
-      if (resetToken) {
-        return (
-          <ResetPassword
-            token={resetToken}
-            onDone={() => (window.location.href = "/admin")}
-          />
-        );
-      }
-      if (adminView === "forgot") {
-        return <ForgotPassword onBack={() => setAdminView("login")} />;
-      }
-      return (
-        <Login
-          onLogin={(agent) => setAdminAgent(agent)}
-          onForgotPassword={() => setAdminView("forgot")}
-        />
-      );
-    }
-    // ... rest of admin dashboard
   }
 
   // ── SHAREHOLDER PORTAL ────────────────────────────────────────────────────
@@ -295,6 +242,7 @@ export default function App() {
         }}
       >
         {step === 1 && <ProductCarousel />}
+
         <StepBar currentStep={step > 5 ? 5 : step} />
 
         {step === 1 && <EmailEntry onNext={onEmailDone} />}
