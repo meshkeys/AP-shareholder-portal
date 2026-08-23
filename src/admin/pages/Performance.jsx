@@ -85,7 +85,8 @@ export default function Performance({ agent, onNavigate }) {
     }
   }
 
-  const perf = data?.performance?.[period];
+  const perf =
+    data?.performance?.["alltime"] || Object.values(data?.performance || {})[0];
   const score = perf?.score || 0;
   const feedback = perf?.feedback;
 
