@@ -9,6 +9,7 @@ const agentRoutes = require("./routes/agents");
 const escalationRoutes = require("./routes/escalations");
 const uploadRoutes = require("./routes/uploads");
 const { startEscalationScheduler } = require("./utils/escalation");
+const autoAssignRoutes = require("./routes/autoAssign");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -47,6 +48,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/agents", agentRoutes);
 app.use("/api/escalations", escalationRoutes);
+app.use("/api/auto-assign", autoAssignRoutes);
 app.use("/api/uploads", uploadRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
@@ -62,7 +64,7 @@ app.use((err, req, res, next) => {
 
 // ── Start escalation scheduler ────────────────────────────────────────────────
 startEscalationScheduler();
-
+startAutoAssignScheduler();
 // ── Start server ──────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`ShareReg API running on http://localhost:${PORT}`);

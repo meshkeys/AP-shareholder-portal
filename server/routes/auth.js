@@ -143,6 +143,14 @@ router.post("/create-agent", async (req, res) => {
   }
 });
 
+// Create auto-assign record for new agent
+try {
+  const { ensureAgentAutoAssignRecord } = require("../utils/autoAssign");
+  await ensureAgentAutoAssignRecord(data.id);
+} catch (autoErr) {
+  console.error("Auto-assign record creation failed:", autoErr.message);
+}
+
 // ── POST /api/auth/change-password ────────────────────────────────────────────
 router.post("/change-password", async (req, res) => {
   const { agentId, currentPassword, newPassword } = req.body;
