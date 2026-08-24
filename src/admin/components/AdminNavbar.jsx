@@ -23,6 +23,12 @@ export default function AdminNavbar({ agent, currentPage, onNavigate }) {
       roles: ["admin", "lead_supervisor", "supervisor", "agent"],
     },
     {
+      id: "autoAssign",
+      label: "Auto-assign",
+      icon: "ti-bolt",
+      roles: ["admin", "lead_supervisor", "supervisor"],
+    },
+    {
       id: "performance",
       label: "Performance",
       icon: "ti-chart-line",

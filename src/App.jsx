@@ -13,6 +13,7 @@ import NUBANChange from "./pages/NUBANChange";
 import ReviewSummary from "./pages/ReviewSummary";
 import Success from "./pages/Success";
 import KYCStandalone from "./pages/KYCStandalone";
+import AutoAssign from "./admin/pages/AutoAssign";
 
 // Admin imports
 import AdminNavbar from "./admin/components/AdminNavbar";
@@ -218,6 +219,7 @@ export default function App() {
           {adminPage === "reports" && <Reports agent={adminAgent} />}
           {adminPage === "agents" && <Agents agent={adminAgent} />}
           {adminPage === "settings" && <Settings agent={adminAgent} />}
+          {adminPage === "autoAssign" && <AutoAssign agent={adminAgent} />}
         </div>
       </div>
     );
