@@ -10,6 +10,7 @@ const escalationRoutes = require("./routes/escalations");
 const uploadRoutes = require("./routes/uploads");
 const { startEscalationScheduler } = require("./utils/escalation");
 const autoAssignRoutes = require("./routes/autoAssign");
+const { startAutoAssignScheduler } = require("./utils/autoAssign");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
