@@ -283,11 +283,27 @@ router.patch("/:id/assign", authenticate, async (req, res) => {
 router.patch("/:id/status", authenticate, async (req, res) => {
   const { id } = req.params;
   const { status, note, sendEmail, emailMessage } = req.body;
-  const { id: agentId, fullName } = req.agent;
+  const { id: agentId, fullName, role } = req.agent;
 
-  const validStatuses = ["in_progress", "completed", "rejected"];
+  const validStatuses = [
+    "in_progress",
+    "waiting_on_customer",
+    "approved",
+    "rejected",
+  ];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: "Invalid status." });
+  }
+
+  // Agents cannot approve — only in_progress and waiting_on_customer
+  if (
+    role === "agent" &&
+    !["in_progress", "waiting_on_customer"].includes(status)
+  ) {
+    return res.status(403).json({
+      error:
+        "Agents can only move tickets to In Progress or Waiting on Customer.",
+    });
   }
 
   try {
@@ -306,7 +322,7 @@ router.patch("/:id/status", authenticate, async (req, res) => {
 
     if (note) updateData.internal_notes = note;
 
-    // Set timestamps
+    // Set timestamps based on status
     if (status === "in_progress" && !request.first_response_at) {
       updateData.first_response_at = now;
       updateData.sla_response_breached = getSLAStatus(request, {
@@ -316,13 +332,64 @@ router.patch("/:id/status", authenticate, async (req, res) => {
       }).response.breached;
     }
 
-    if (["completed", "rejected"].includes(status)) {
+    if (status === "waiting_on_customer") {
+      updateData.waiting_since = now;
+    }
+
+    if (["approved", "rejected", "closed"].includes(status)) {
       updateData.resolved_at = now;
       updateData.sla_resolve_breached = getSLAStatus(request, {
         assignHours: settings.sla_assign_hours,
         responseHours: settings.sla_response_hours,
         resolveHours: settings.sla_resolve_hours,
       }).resolve.breached;
+    }
+
+    // If approved — fire to external app immediately
+    if (status === "approved") {
+      updateData.approved_at = now;
+      updateData.approved_by = agentId;
+
+      const { data: documents } = await supabase
+        .from("documents")
+        .select("*")
+        .eq("request_id", id);
+
+      const externalPayload = {
+        referenceNumber: request.reference_number,
+        requestType: request.request_type,
+        shareholderName: request.shareholder_name,
+        shareholderEmail: request.shareholder_email,
+        fields: request.fields,
+        submittedAt: request.submitted_at,
+        approvedAt: now,
+        approvedBy: fullName,
+        documents: (documents || []).map((doc) => ({
+          type: doc.document_type,
+          fileName: doc.file_name,
+          fileUrl: doc.file_url,
+        })),
+      };
+
+      const EXTERNAL_ENDPOINT = process.env.EXTERNAL_APP_ENDPOINT;
+      if (EXTERNAL_ENDPOINT) {
+        try {
+          const extRes = await fetch(EXTERNAL_ENDPOINT, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.EXTERNAL_APP_TOKEN || ""}`,
+            },
+            body: JSON.stringify(externalPayload),
+          });
+          const extData = await extRes.json();
+          updateData.external_ref =
+            extData?.referenceNumber || extData?.id || null;
+          updateData.external_sync = true;
+        } catch (extErr) {
+          console.error("External app sync failed:", extErr.message);
+        }
+      }
     }
 
     const { data: updated, error } = await supabase
@@ -334,12 +401,13 @@ router.patch("/:id/status", authenticate, async (req, res) => {
 
     if (error) throw error;
 
+    // Add note to activity log
     await supabase.from("activity_log").insert([
       {
         request_id: id,
         agent_id: agentId,
         action: "status_changed",
-        details: `Status changed to ${status} by ${fullName}${note ? ` — Note: ${note}` : ""}`,
+        details: `Status changed to ${status} by ${fullName}${note ? ` — ${note}` : ""}`,
       },
     ]);
 
@@ -465,7 +533,7 @@ router.post("/bulk-assign", authenticate, async (req, res) => {
         assigned_at: now,
       })
       .in("id", requestIds)
-      .not("status", "in", '("completed","approved",)');
+      .not("status", "in", '("completed","approved")');
 
     if (error) throw error;
 

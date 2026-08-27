@@ -12,22 +12,26 @@ import {
 } from "../services/adminApi";
 
 const STATUS_ACTIONS = {
-  pending: ["assigned"],
-  assigned: ["in_progress", "rejected"],
-  in_progress: ["completed", "rejected"],
-  completed: [],
-  rejected: [],
+  pending: [],
+  assigned: ["in_progress"],
+  in_progress: ["waiting_on_customer", "approved"],
+  waiting_on_customer: ["in_progress"],
   approved: [],
+  completed: [],
+  rejected: ["in_progress", "waiting_on_customer"],
+  closed: [],
   approval_revoked: ["in_progress"],
 };
 
 const DEFAULT_MESSAGES = {
   in_progress:
     "We have received your request and it is currently being reviewed by our team. We will keep you updated on the progress.",
-  completed:
-    "We are pleased to inform you that your request has been successfully processed. Please allow 3-5 business days for the changes to reflect.",
+  waiting_on_customer:
+    "We have reviewed your request and require additional information or documents from you. Please check the flagged items and resubmit at your earliest convenience.",
+  approved:
+    "We are pleased to inform you that your request has been approved and is being processed.",
   rejected:
-    "We regret to inform you that we were unable to process your request. Please contact our support team for further assistance.",
+    "We regret to inform you that we were unable to process your request. Please see the reason provided and contact our support team for further assistance.",
 };
 
 export default function RequestDetail({ agent, requestId, onBack }) {

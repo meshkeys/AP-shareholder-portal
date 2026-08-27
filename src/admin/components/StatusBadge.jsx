@@ -22,6 +22,20 @@ const STATUS_CONFIG = {
     border: "#b0dcf5",
     icon: "ti-loader",
   },
+  waiting_on_customer: {
+    label: "Waiting on Customer",
+    background: "#fff8e6",
+    color: "#b36a00",
+    border: "#f5d78e",
+    icon: "ti-clock-pause",
+  },
+  closed: {
+    label: "Closed",
+    background: "#f5f5f5",
+    color: "#6b6b6b",
+    border: "#e0e0e0",
+    icon: "ti-lock",
+  },
   completed: {
     label: "Completed",
     background: "#f0faf4",

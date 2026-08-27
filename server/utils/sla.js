@@ -297,6 +297,123 @@ async function updateAgentPerformance(agentId, settings) {
   }
 }
 
+// ── Check working hours elapsed (Mon-Fri only) ────────────────────────────────
+function workingHoursElapsed(fromTimestamp) {
+  if (!fromTimestamp) return 0;
+
+  const start = new Date(fromTimestamp);
+  const now = new Date();
+  let hours = 0;
+  let current = new Date(start);
+
+  while (current < now) {
+    const day = current.getDay(); // 0=Sun, 6=Sat
+    if (day !== 0 && day !== 6) {
+      hours++;
+    }
+    current.setHours(current.getHours() + 1);
+  }
+
+  return hours;
+}
+
+// ── Run waiting on customer checker ──────────────────────────────────────────
+async function runWaitingOnCustomerCheck() {
+  console.log(
+    `[${new Date().toISOString()}] Running waiting on customer check...`,
+  );
+
+  try {
+    const { supabase } = require("./supabase");
+    const { sendWaitingClosedEmail } = require("./mailer");
+
+    // Get all tickets in waiting_on_customer status
+    const { data: tickets, error } = await supabase
+      .from("requests")
+      .select("*")
+      .eq("status", "waiting_on_customer");
+
+    if (error) throw error;
+    if (!tickets?.length) {
+      console.log("No tickets waiting on customer.");
+      return;
+    }
+
+    for (const ticket of tickets) {
+      const hoursWaiting = workingHoursElapsed(ticket.waiting_since);
+
+      if (hoursWaiting >= 48) {
+        // Auto-close ticket
+        await supabase
+          .from("requests")
+          .update({
+            status: "closed",
+            closed_at: new Date().toISOString(),
+            closed_reason:
+              "Auto-closed after 48 working hours with no customer response.",
+          })
+          .eq("id", ticket.id);
+
+        // Generate reopen token
+        const crypto = require("crypto");
+        const reopenToken = crypto.randomBytes(32).toString("hex");
+        const tokenExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+        await supabase
+          .from("requests")
+          .update({
+            resubmit_token: reopenToken,
+            resubmit_token_expiry: tokenExpiry.toISOString(),
+          })
+          .eq("id", ticket.id);
+
+        // Build reopen URL
+        const reopenUrl = `${process.env.FRONTEND_URL}/resubmit?token=${reopenToken}&ref=${ticket.reference_number}`;
+
+        // Send closed email to shareholder
+        try {
+          await sendWaitingClosedEmail(
+            ticket.shareholder_email,
+            ticket.shareholder_name,
+            ticket.reference_number,
+            reopenUrl,
+          );
+        } catch (emailErr) {
+          console.error(
+            `Failed to send closed email for ${ticket.reference_number}:`,
+            emailErr.message,
+          );
+        }
+
+        // Log activity
+        await supabase.from("activity_log").insert([
+          {
+            request_id: ticket.id,
+            agent_id: null,
+            action: "auto_closed",
+            details: `Ticket auto-closed by system after 48 working hours with no customer response.`,
+          },
+        ]);
+
+        console.log(
+          `Ticket ${ticket.reference_number} auto-closed after ${hoursWaiting} working hours.`,
+        );
+      }
+    }
+
+    console.log(`Waiting on customer check complete.`);
+  } catch (err) {
+    console.error("Waiting on customer check error:", err);
+  }
+}
+
+// ── Start waiting on customer scheduler ───────────────────────────────────────
+function startWaitingOnCustomerScheduler() {
+  console.log("Waiting on customer scheduler started — checking every hour.");
+  runWaitingOnCustomerCheck();
+  setInterval(runWaitingOnCustomerCheck, 60 * 60 * 1000); // every hour
+}
+
 module.exports = {
   getSLASettings,
   getSLAStatus,
@@ -305,4 +422,6 @@ module.exports = {
   getPeriodDates,
   updateAgentPerformance,
   hoursBetween,
+  startWaitingOnCustomerScheduler,
+  runWaitingOnCustomerCheck,
 };

@@ -11,6 +11,8 @@ const uploadRoutes = require("./routes/uploads");
 const { startEscalationScheduler } = require("./utils/escalation");
 const autoAssignRoutes = require("./routes/autoAssign");
 const { startAutoAssignScheduler } = require("./utils/autoAssign");
+const { startWaitingOnCustomerScheduler } = require("./utils/sla");
+const cannedResponseRoutes = require("./routes/cannedResponses");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -43,6 +45,8 @@ app.options("*", cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+startWaitingOnCustomerScheduler();
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.use("/api/otp", otpRoutes);
 app.use("/api/auth", authRoutes);
@@ -50,6 +54,7 @@ app.use("/api/requests", requestRoutes);
 app.use("/api/agents", agentRoutes);
 app.use("/api/escalations", escalationRoutes);
 app.use("/api/auto-assign", autoAssignRoutes);
+app.use("/api/canned-responses", cannedResponseRoutes);
 app.use("/api/uploads", uploadRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
