@@ -187,7 +187,8 @@ router.get("/:id", authenticate, async (req, res) => {
           *,
           agents!activity_log_agent_id_fkey (
             id,
-            full_name
+            full_name,
+            role
           )
         `,
       )

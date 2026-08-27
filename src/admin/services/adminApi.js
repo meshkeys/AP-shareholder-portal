@@ -283,6 +283,23 @@ export async function updateSystemSettings(data) {
   return handleResponse(res);
 }
 
+export async function getCannedResponses(requestType) {
+  const params = requestType ? `?requestType=${requestType}` : "";
+  const res = await fetch(`${BASE_URL}/api/canned-responses${params}`, {
+    headers: getHeaders(),
+  });
+  return handleResponse(res);
+}
+
+export async function sendFlagEmail(requestId, emailMessage, flaggedItems) {
+  const res = await fetch(`${BASE_URL}/api/canned-responses/send-flag`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify({ requestId, emailMessage, flaggedItems }),
+  });
+  return handleResponse(res);
+}
+
 // ── Local storage helpers ─────────────────────────────────────────────────────
 
 export function saveSession(token, agent) {

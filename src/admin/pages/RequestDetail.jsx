@@ -9,6 +9,7 @@ import {
   toggleEmailNotification,
   approveRequest,
   revokeApproval,
+  getCannedResponses,
 } from "../services/adminApi";
 
 const STATUS_ACTIONS = {
@@ -55,6 +56,11 @@ export default function RequestDetail({ agent, requestId, onBack }) {
   const [revoking, setRevoking] = useState(false);
   const [revokeReason, setRevokeReason] = useState("");
   const [showRevoke, setShowRevoke] = useState(false);
+  const [cannedResponses, setCannedResponses] = useState([]);
+  const [selectedCanned, setSelectedCanned] = useState("");
+  const [flaggedItems, setFlaggedItems] = useState([]);
+  const [availableFlagItems, setAvailableFlagItems] = useState([]);
+  const [sendingFlag, setSendingFlag] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -68,6 +74,11 @@ export default function RequestDetail({ agent, requestId, onBack }) {
       setDocuments(res.documents || []);
       setActivity(res.activity || []);
       setNoteText(res.request.internal_notes || "");
+
+      // Load canned responses for this request type
+      const cannedRes = await getCannedResponses(res.request.request_type);
+      setCannedResponses(cannedRes.responses || []);
+
       if (["admin", "supervisor", "lead_supervisor"].includes(agent.role)) {
         const agentsRes = await getAgents();
         setAgents(
@@ -626,633 +637,281 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             )}
           </div>
 
-          {/* Internal notes */}
-          <div
-            style={{
-              background: "#fff",
-              border: "1px solid #e8e8e8",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "14px",
-                fontWeight: "500",
-                marginBottom: "14px",
-              }}
-            >
-              Internal notes
-            </h3>
-            <textarea
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-              placeholder="Add internal notes about this request..."
-              rows={4}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                fontSize: "14px",
-                border: "1px solid #e0e0e0",
-                borderRadius: "8px",
-                resize: "vertical",
-                fontFamily: "inherit",
-                outline: "none",
-              }}
-            />
-            <button
-              className="btn-primary"
-              style={{ marginTop: "10px", width: "auto", padding: "8px 16px" }}
-              onClick={handleAddNote}
-              disabled={addingNote}
-            >
-              {addingNote ? (
-                <>
-                  <span className="spinner" /> Saving...
-                </>
-              ) : (
-                <>
-                  <i
-                    className="ti ti-device-floppy"
-                    style={{ fontSize: "15px" }}
-                  />{" "}
-                  Save note
-                </>
-              )}
-            </button>
-          </div>
+          {/* Activity log & Notes */}
+<div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "12px", padding: "20px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+  <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "16px" }}>Activity & Notes</h3>
+  {activity.length === 0 ? (
+    <p style={{ fontSize: "13px", color: "#6b6b6b" }}>No activity yet.</p>
+  ) : (
+    activity.map((log, idx) => {
+      const isSystem   = !log.agent_id
+      const isExternal = log.action === 'external_accepted' || log.action === 'external_rejected'
+      const isNote     = log.action === 'note_added'
+      const isFlag     = log.action === 'flagged'
+      const isWaiting  = log.action === 'status_changed' && log.details?.includes('waiting_on_customer')
 
-          {/* Activity log */}
-          <div
-            style={{
-              background: "#fff",
-              border: "1px solid #e8e8e8",
-              borderRadius: "12px",
-              padding: "20px",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "14px",
-                fontWeight: "500",
-                marginBottom: "14px",
-              }}
-            >
-              Activity log
-            </h3>
-            {activity.length === 0 ? (
-              <p style={{ fontSize: "13px", color: "#6b6b6b" }}>
-                No activity yet.
-              </p>
-            ) : (
-              activity.map((log, idx) => (
-                <div
-                  key={log.id}
-                  style={{
-                    display: "flex",
-                    gap: "12px",
-                    paddingBottom: idx < activity.length - 1 ? "14px" : 0,
-                    marginBottom: idx < activity.length - 1 ? "14px" : 0,
-                    borderBottom:
-                      idx < activity.length - 1 ? "1px solid #f0f0f0" : "none",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "32px",
-                      height: "32px",
-                      borderRadius: "50%",
-                      background: "#fdf1f0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <i
-                      className={`ti ${getActionIcon(log.action)}`}
-                      style={{ fontSize: "14px", color: "#C0392B" }}
-                    />
-                  </div>
-                  <div>
-                    <p
-                      style={{
-                        fontSize: "13px",
-                        color: "#1a1a1a",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {log.details}
-                    </p>
-                    <p
-                      style={{
-                        fontSize: "11px",
-                        color: "#b0b0b0",
-                        marginTop: "3px",
-                      }}
-                    >
-                      {new Date(log.created_at).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
+      let dotColor = '#6b6b6b'
+      let bgColor  = '#f8f8f8'
+      if (isExternal)      { dotColor = '#C0392B'; bgColor = '#fdf1f0' }
+      else if (isNote)     { dotColor = '#2255cc'; bgColor = '#f0f4ff' }
+      else if (isFlag)     { dotColor = '#b36a00'; bgColor = '#fff8e6' }
+      else if (isSystem)   { dotColor = '#6b6b6b'; bgColor = '#f5f5f5' }
+      else                 { dotColor = '#1a7a40'; bgColor = '#f0faf4' }
+
+      return (
+        <div key={log.id} style={{ display: "flex", gap: "12px", paddingBottom: idx < activity.length - 1 ? "14px" : 0, marginBottom: idx < activity.length - 1 ? "14px" : 0, borderBottom: idx < activity.length - 1 ? "1px solid #f0f0f0" : "none" }}>
+          {/* Icon */}
+          <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: bgColor, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1px solid ${dotColor}30` }}>
+            <i className={`ti ${getActionIcon(log.action)}`} style={{ fontSize: "14px", color: dotColor }} />
           </div>
+          <div style={{ flex: 1 }}>
+            {/* Who */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+              <span style={{ fontSize: '12px', fontWeight: '600', color: dotColor }}>
+                {isExternal ? 'External App' : isSystem ? 'System' : log.agents?.full_name || 'Unknown'}
+              </span>
+              {log.agents?.role && !isSystem && !isExternal && (
+                <span style={{ fontSize: '10px', color: '#b0b0b0', textTransform: 'capitalize' }}>
+                  · {log.agents.role.replace('_', ' ')}
+                </span>
+              )}
+            </div>
+            {/* Details */}
+            <p style={{ fontSize: "13px", color: "#1a1a1a", lineHeight: 1.5 }}>{log.details}</p>
+            {/* Time */}
+            <p style={{ fontSize: "11px", color: "#b0b0b0", marginTop: "3px" }}>
+              {new Date(log.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+            </p>
+          </div>
+        </div>
+      )
+    })
+  )}
+
+  {/* Add new note */}
+  <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: '16px', marginTop: '8px' }}>
+    <p style={{ fontSize: '12px', fontWeight: '500', color: '#6b6b6b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+      Add internal note
+    </p>
+    <textarea
+      value={noteText}
+      onChange={e => setNoteText(e.target.value)}
+      placeholder="Type a note visible only to agents and supervisors..."
+      rows={3}
+      style={{ width: '100%', padding: '10px 12px', fontSize: '13px', border: '1px solid #e0e0e0', borderRadius: '8px', resize: 'vertical', fontFamily: 'inherit', outline: 'none', marginBottom: '8px' }}
+    />
+    <button
+      className="btn-primary"
+      style={{ width: 'auto', padding: '7px 14px', fontSize: '13px' }}
+      onClick={handleAddNote}
+      disabled={addingNote || !noteText.trim()}
+    >
+      {addingNote
+        ? <><span className="spinner" /> Saving...</>
+        : <><i className="ti ti-notes" style={{ fontSize: '14px' }} /> Add note</>
+      }
+    </button>
+  </div>
+</div>
         </div>
 
         {/* ── RIGHT COLUMN ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {/* Assign request — supervisors and admins only */}
-          {["admin", "supervisor", "lead_supervisor"].includes(agent.role) && (
-            <div
-              style={{
-                background: "#fff",
-                border: "1px solid #e8e8e8",
-                borderRadius: "12px",
-                padding: "16px",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  marginBottom: "12px",
-                }}
-              >
-                <i
-                  className="ti ti-user-plus"
-                  style={{
-                    fontSize: "15px",
-                    marginRight: "6px",
-                    color: "#C0392B",
-                  }}
-                />
-                {request.assigned_to ? "Reassign request" : "Assign request"}
-                Assign Request
-              </h3>
-              <select
-                value={selectedAgent}
-                onChange={(e) => setSelectedAgent(e.target.value)}
-                style={{ ...selectStyle, marginBottom: "10px" }}
-              >
-                <option value="">Select an agent</option>
-                {agents.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.full_name}
-                  </option>
-                ))}
-              </select>
-              <button
-                className="btn-primary"
-                onClick={handleAssign}
-                disabled={!selectedAgent || assigning}
-              >
-                {assigning ? (
-                  <>
-                    <span className="spinner" /> Assigning...
-                  </>
-                ) : (
-                  <>
-                    <i
-                      className="ti ti-user-check"
-                      style={{ fontSize: "15px" }}
-                    />{" "}
-                    Assign
-                  </>
-                )}
-              </button>
-            </div>
-          )}
+<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {/* Update status */}
-          {availableStatuses.length > 0 && (
-            <div
-              style={{
-                background: "#fff",
-                border: "1px solid #e8e8e8",
-                borderRadius: "12px",
-                padding: "16px",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  marginBottom: "12px",
-                }}
-              >
-                <i
-                  className="ti ti-refresh"
-                  style={{
-                    fontSize: "15px",
-                    marginRight: "6px",
-                    color: "#C0392B",
-                  }}
-                />
-                Update status
-              </h3>
-              <select
-                value={newStatus}
-                onChange={(e) => {
-                  setNewStatus(e.target.value);
-                  setEmailMessage(DEFAULT_MESSAGES[e.target.value] || "");
-                }}
-                style={{ ...selectStyle, marginBottom: "10px" }}
-              >
-                <option value="">Select new status</option>
-                {availableStatuses.map((s) => (
-                  <option key={s} value={s}>
-                    {s === "in_progress"
-                      ? "In Progress"
-                      : s.charAt(0).toUpperCase() + s.slice(1)}
-                  </option>
-                ))}
-              </select>
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Add a note (optional)"
-                rows={2}
-                style={{
-                  width: "100%",
-                  padding: "9px 12px",
-                  fontSize: "13px",
-                  border: "1px solid #e0e0e0",
-                  borderRadius: "8px",
-                  resize: "none",
-                  fontFamily: "inherit",
-                  outline: "none",
-                  marginBottom: "10px",
-                }}
-              />
-              {/* Email toggle */}
-              <div
-                onClick={() => setSendEmail((prev) => !prev)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  cursor: "pointer",
-                  marginBottom: "10px",
-                  padding: "8px 10px",
-                  background: sendEmail ? "#f0faf4" : "#fafafa",
-                  borderRadius: "6px",
-                  border: `1px solid ${sendEmail ? "#a8dfc0" : "#e8e8e8"}`,
-                }}
-              >
-                <div
-                  style={{
-                    width: "16px",
-                    height: "16px",
-                    borderRadius: "3px",
-                    border: `2px solid ${sendEmail ? "#1a7a40" : "#d0d0d0"}`,
-                    background: sendEmail ? "#1a7a40" : "transparent",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  {sendEmail && (
-                    <i
-                      className="ti ti-check"
-                      style={{ fontSize: "10px", color: "#fff" }}
-                    />
-                  )}
-                </div>
-                <p
-                  style={{
-                    fontSize: "13px",
-                    color: sendEmail ? "#1a7a40" : "#6b6b6b",
-                    fontWeight: sendEmail ? "500" : "400",
-                  }}
-                >
-                  Send email notification to shareholder
-                </p>
-              </div>
-              {sendEmail && newStatus && (
-                <div style={{ marginBottom: "10px" }}>
-                  <label
-                    style={{
-                      fontSize: "12px",
-                      color: "#6b6b6b",
-                      marginBottom: "6px",
-                      display: "block",
-                    }}
-                  >
-                    Email message (editable)
-                  </label>
-                  <textarea
-                    value={emailMessage}
-                    onChange={(e) => setEmailMessage(e.target.value)}
-                    rows={4}
-                    style={{
-                      width: "100%",
-                      padding: "9px 12px",
-                      fontSize: "13px",
-                      border: "1px solid #e0e0e0",
-                      borderRadius: "8px",
-                      resize: "vertical",
-                      fontFamily: "inherit",
-                      outline: "none",
-                    }}
-                  />
-                </div>
-              )}
-              <button
-                className="btn-primary"
-                onClick={handleStatusUpdate}
-                disabled={!newStatus || updatingStatus}
-              >
-                {updatingStatus ? (
-                  <>
-                    <span className="spinner" /> Updating...
-                  </>
-                ) : (
-                  <>
-                    <i
-                      className="ti ti-circle-check"
-                      style={{ fontSize: "15px" }}
-                    />{" "}
-                    Update status
-                  </>
-                )}
-              </button>
-            </div>
-          )}
+  {/* Assign request */}
+  {["admin", "supervisor", "lead_supervisor"].includes(agent.role) && (
+    <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "12px", padding: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+      <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "12px" }}>
+        <i className="ti ti-user-plus" style={{ fontSize: "15px", marginRight: "6px", color: "#C0392B" }} />
+        {request.assigned_to ? 'Reassign request' : 'Assign request'}
+      </h3>
+      <select value={selectedAgent} onChange={e => setSelectedAgent(e.target.value)} style={{ ...selectStyle, marginBottom: "10px" }}>
+        <option value="">Select an agent</option>
+        {agents.map(a => <option key={a.id} value={a.id}>{a.full_name}</option>)}
+      </select>
+      <button className="btn-primary" onClick={handleAssign} disabled={!selectedAgent || assigning}>
+        {assigning ? <><span className="spinner" /> Assigning...</> : <><i className="ti ti-user-check" style={{ fontSize: "15px" }} /> {request.assigned_to ? 'Reassign' : 'Assign'}</>}
+      </button>
+    </div>
+  )}
 
-          {/* ── APPROVE REQUEST — shown when completed ── */}
-          {request.status === "completed" && (
-            <div
-              style={{
-                background: "#fff",
-                border: "1px solid #a8dfc0",
-                borderRadius: "12px",
-                padding: "16px",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  marginBottom: "8px",
-                }}
-              >
-                <i
-                  className="ti ti-circle-check"
-                  style={{
-                    fontSize: "15px",
-                    marginRight: "6px",
-                    color: "#1a7a40",
-                  }}
-                />
-                Approve request
-              </h3>
-              <p
-                style={{
-                  fontSize: "12px",
-                  color: "#6b6b6b",
-                  marginBottom: "12px",
-                  lineHeight: 1.5,
-                }}
-              >
-                Approving will mark this request as final and send the data to
-                the external system.
-              </p>
-              <button
-                className="btn-primary"
-                onClick={handleApprove}
-                disabled={approving}
-                style={{ background: "#1a7a40" }}
-              >
-                {approving ? (
-                  <>
-                    <span className="spinner" /> Approving...
-                  </>
-                ) : (
-                  <>
-                    <i className="ti ti-check" style={{ fontSize: "15px" }} />{" "}
-                    Approve this request
-                  </>
-                )}
-              </button>
-            </div>
-          )}
+  {/* Update status */}
+  {availableStatuses.length > 0 && (
+    <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "12px", padding: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+      <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "12px" }}>
+        <i className="ti ti-refresh" style={{ fontSize: "15px", marginRight: "6px", color: "#C0392B" }} />
+        Update status
+      </h3>
 
-          {/* ── REVOKE APPROVAL — shown when approved ── */}
-          {request.status === "approved" && (
-            <div
-              style={{
-                background: "#fff",
-                border: "1px solid #f5d78e",
-                borderRadius: "12px",
-                padding: "16px",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  marginBottom: "8px",
-                }}
-              >
-                <i
-                  className="ti ti-rotate"
-                  style={{
-                    fontSize: "15px",
-                    marginRight: "6px",
-                    color: "#b36a00",
-                  }}
-                />
-                Approval status
-              </h3>
-              <div
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: "8px",
-                  background: request.external_sync ? "#f0faf4" : "#fff8e6",
-                  border: `1px solid ${request.external_sync ? "#a8dfc0" : "#f5d78e"}`,
-                  marginBottom: "12px",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    color: request.external_sync ? "#1a7a40" : "#b36a00",
-                  }}
-                >
-                  <i
-                    className={`ti ${request.external_sync ? "ti-cloud-check" : "ti-cloud-off"}`}
-                    style={{ fontSize: "13px", marginRight: "5px" }}
-                  />
-                  {request.external_sync
-                    ? `Synced — Ref: ${request.external_ref}`
-                    : "Not yet synced to external app"}
-                </p>
-              </div>
-              {!showRevoke ? (
-                <button
-                  className="btn-ghost"
-                  onClick={() => setShowRevoke(true)}
-                  style={{ fontSize: "13px" }}
-                >
-                  <i
-                    className="ti ti-arrow-back"
-                    style={{ fontSize: "14px" }}
-                  />{" "}
-                  Revoke approval
-                </button>
-              ) : (
-                <div>
-                  <label
-                    style={{
-                      fontSize: "12px",
-                      color: "#6b6b6b",
-                      marginBottom: "5px",
-                      display: "block",
-                    }}
-                  >
-                    Reason for revoking (optional)
-                  </label>
-                  <textarea
-                    value={revokeReason}
-                    onChange={(e) => setRevokeReason(e.target.value)}
-                    placeholder="Enter reason..."
-                    rows={2}
-                    style={{
-                      width: "100%",
-                      padding: "8px 10px",
-                      fontSize: "13px",
-                      border: "1px solid #e0e0e0",
-                      borderRadius: "6px",
-                      resize: "none",
-                      fontFamily: "inherit",
-                      outline: "none",
-                      marginBottom: "8px",
-                    }}
-                  />
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <button
-                      className="btn-primary"
-                      onClick={handleRevokeApproval}
-                      disabled={revoking}
-                      style={{ flex: 1, background: "#b36a00" }}
-                    >
-                      {revoking ? (
-                        <>
-                          <span className="spinner" /> Revoking...
-                        </>
-                      ) : (
-                        "Confirm revoke"
-                      )}
-                    </button>
-                    <button
-                      className="btn-ghost"
-                      onClick={() => {
-                        setShowRevoke(false);
-                        setRevokeReason("");
-                      }}
-                      style={{ flex: 1 }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+      <select value={newStatus} onChange={e => { setNewStatus(e.target.value); setEmailMessage(DEFAULT_MESSAGES[e.target.value] || '') }} style={{ ...selectStyle, marginBottom: "10px" }}>
+        <option value="">Select new status</option>
+        {availableStatuses.map(s => (
+          <option key={s} value={s}>
+            {s === 'in_progress' ? 'In Progress' : s === 'waiting_on_customer' ? 'Waiting on Customer' : s.charAt(0).toUpperCase() + s.slice(1)}
+          </option>
+        ))}
+      </select>
 
-          {/* Email notification toggle */}
-          <div
-            style={{
-              background: "#fff",
-              border: "1px solid #e8e8e8",
-              borderRadius: "12px",
-              padding: "16px",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+      {/* Canned responses dropdown — shown when waiting on customer */}
+      {newStatus === 'waiting_on_customer' && (
+        <div style={{ marginBottom: '10px' }}>
+          <label style={{ fontSize: '12px', color: '#6b6b6b', marginBottom: '5px', display: 'block' }}>
+            Select a canned response (optional)
+          </label>
+          <select
+            value={selectedCanned}
+            onChange={e => {
+              const id       = e.target.value
+              setSelectedCanned(id)
+              if (id) {
+                const found = cannedResponses.find(r => r.id === id)
+                if (found) {
+                  setEmailMessage(found.body)
+                  setAvailableFlagItems(found.flagged_items || [])
+                  setFlaggedItems([])
+                }
+              }
             }}
+            style={{ ...selectStyle, marginBottom: '10px' }}
           >
-            <h3
-              style={{
-                fontSize: "14px",
-                fontWeight: "500",
-                marginBottom: "12px",
-              }}
-            >
-              <i
-                className="ti ti-mail"
-                style={{
-                  fontSize: "15px",
-                  marginRight: "6px",
-                  color: "#C0392B",
-                }}
-              />
-              Email notifications
-            </h3>
-            <div
-              onClick={handleEmailToggle}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                cursor: "pointer",
-                padding: "10px 12px",
-                background: request.email_toggle ? "#f0faf4" : "#fafafa",
-                borderRadius: "8px",
-                border: `1px solid ${request.email_toggle ? "#a8dfc0" : "#e8e8e8"}`,
-              }}
-            >
-              <p
-                style={{
-                  fontSize: "13px",
-                  color: request.email_toggle ? "#1a7a40" : "#6b6b6b",
-                  fontWeight: "500",
-                }}
-              >
-                {request.email_toggle
-                  ? "Notifications enabled"
-                  : "Notifications disabled"}
+            <option value="">— Choose a canned response —</option>
+            {cannedResponses.map(r => (
+              <option key={r.id} value={r.id}>{r.title}</option>
+            ))}
+          </select>
+
+          {/* Flagged items checkboxes */}
+          {availableFlagItems.length > 0 && (
+            <div style={{ background: '#fafafa', border: '1px solid #e8e8e8', borderRadius: '8px', padding: '12px', marginBottom: '10px' }}>
+              <p style={{ fontSize: '12px', fontWeight: '500', color: '#6b6b6b', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                Select items to flag:
               </p>
-              <div
-                style={{
-                  width: "36px",
-                  height: "20px",
-                  borderRadius: "10px",
-                  background: request.email_toggle ? "#1a7a40" : "#d0d0d0",
-                  position: "relative",
-                  transition: "background 0.2s",
-                }}
-              >
+              {availableFlagItems.map((item, idx) => (
                 <div
-                  style={{
-                    width: "14px",
-                    height: "14px",
-                    borderRadius: "50%",
-                    background: "#fff",
-                    position: "absolute",
-                    top: "3px",
-                    left: request.email_toggle ? "19px" : "3px",
-                    transition: "left 0.2s",
+                  key={idx}
+                  onClick={() => {
+                    setFlaggedItems(prev =>
+                      prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
+                    )
                   }}
-                />
-              </div>
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '6px 0', borderBottom: idx < availableFlagItems.length - 1 ? '1px solid #f0f0f0' : 'none' }}
+                >
+                  <div style={{ width: '15px', height: '15px', borderRadius: '3px', border: `2px solid ${flaggedItems.includes(item) ? '#C0392B' : '#d0d0d0'}`, background: flaggedItems.includes(item) ? '#C0392B' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {flaggedItems.includes(item) && <i className="ti ti-check" style={{ fontSize: '9px', color: '#fff' }} />}
+                  </div>
+                  <span style={{ fontSize: '12px', color: flaggedItems.includes(item) ? '#C0392B' : '#6b6b6b' }}>{item}</span>
+                </div>
+              ))}
             </div>
+          )}
+        </div>
+      )}
+
+      <textarea
+        value={note}
+        onChange={e => setNote(e.target.value)}
+        placeholder="Add a note (optional)"
+        rows={2}
+        style={{ width: "100%", padding: "9px 12px", fontSize: "13px", border: "1px solid #e0e0e0", borderRadius: "8px", resize: "none", fontFamily: "inherit", outline: "none", marginBottom: "10px" }}
+      />
+
+      {/* Email toggle */}
+      <div onClick={() => setSendEmail(prev => !prev)} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", marginBottom: "10px", padding: "8px 10px", background: sendEmail ? "#f0faf4" : "#fafafa", borderRadius: "6px", border: `1px solid ${sendEmail ? "#a8dfc0" : "#e8e8e8"}` }}>
+        <div style={{ width: "16px", height: "16px", borderRadius: "3px", border: `2px solid ${sendEmail ? "#1a7a40" : "#d0d0d0"}`, background: sendEmail ? "#1a7a40" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          {sendEmail && <i className="ti ti-check" style={{ fontSize: "10px", color: "#fff" }} />}
+        </div>
+        <p style={{ fontSize: "13px", color: sendEmail ? "#1a7a40" : "#6b6b6b", fontWeight: sendEmail ? "500" : "400" }}>
+          Send email notification to shareholder
+        </p>
+      </div>
+
+      {/* Editable email message */}
+      {sendEmail && newStatus && (
+        <div style={{ marginBottom: "10px" }}>
+          <label style={{ fontSize: "12px", color: "#6b6b6b", marginBottom: "6px", display: "block" }}>
+            Email message (editable)
+          </label>
+          <textarea
+            value={emailMessage}
+            onChange={e => setEmailMessage(e.target.value)}
+            rows={4}
+            style={{ width: "100%", padding: "9px 12px", fontSize: "13px", border: "1px solid #e0e0e0", borderRadius: "8px", resize: "vertical", fontFamily: "inherit", outline: "none" }}
+          />
+        </div>
+      )}
+
+      <button className="btn-primary" onClick={handleStatusUpdate} disabled={!newStatus || updatingStatus}>
+        {updatingStatus ? <><span className="spinner" /> Updating...</> : <><i className="ti ti-circle-check" style={{ fontSize: "15px" }} /> Update status</>}
+      </button>
+    </div>
+  )}
+
+  {/* Approve request */}
+  {request.status === "in_progress" && (
+    <div style={{ background: "#fff", border: "1px solid #a8dfc0", borderRadius: "12px", padding: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+      <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px" }}>
+        <i className="ti ti-circle-check" style={{ fontSize: "15px", marginRight: "6px", color: "#1a7a40" }} />
+        Approve request
+      </h3>
+      <p style={{ fontSize: "12px", color: "#6b6b6b", marginBottom: "12px", lineHeight: 1.5 }}>
+        Approving will immediately send this request to the external system for processing.
+      </p>
+      <button className="btn-primary" onClick={handleApprove} disabled={approving} style={{ background: "#1a7a40" }}>
+        {approving ? <><span className="spinner" /> Approving...</> : <><i className="ti ti-check" style={{ fontSize: "15px" }} /> Approve & send to external app</>}
+      </button>
+    </div>
+  )}
+
+  {/* Revoke approval */}
+  {request.status === "approved" && (
+    <div style={{ background: "#fff", border: "1px solid #f5d78e", borderRadius: "12px", padding: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+      <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px" }}>
+        <i className="ti ti-rotate" style={{ fontSize: "15px", marginRight: "6px", color: "#b36a00" }} />
+        Approval status
+      </h3>
+      <div style={{ padding: "10px 12px", borderRadius: "8px", background: request.external_sync ? "#f0faf4" : "#fff8e6", border: `1px solid ${request.external_sync ? "#a8dfc0" : "#f5d78e"}`, marginBottom: "12px" }}>
+        <p style={{ fontSize: "12px", fontWeight: "500", color: request.external_sync ? "#1a7a40" : "#b36a00" }}>
+          <i className={`ti ${request.external_sync ? "ti-cloud-check" : "ti-cloud-off"}`} style={{ fontSize: "13px", marginRight: "5px" }} />
+          {request.external_sync ? `Synced — Ref: ${request.external_ref}` : "Awaiting external app response"}
+        </p>
+      </div>
+      {!showRevoke ? (
+        <button className="btn-ghost" onClick={() => setShowRevoke(true)} style={{ fontSize: "13px" }}>
+          <i className="ti ti-arrow-back" style={{ fontSize: "14px" }} /> Revoke approval
+        </button>
+      ) : (
+        <div>
+          <label style={{ fontSize: "12px", color: "#6b6b6b", marginBottom: "5px", display: "block" }}>Reason for revoking</label>
+          <textarea value={revokeReason} onChange={e => setRevokeReason(e.target.value)} placeholder="Enter reason..." rows={2} style={{ width: "100%", padding: "8px 10px", fontSize: "13px", border: "1px solid #e0e0e0", borderRadius: "6px", resize: "none", fontFamily: "inherit", outline: "none", marginBottom: "8px" }} />
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button className="btn-primary" onClick={handleRevokeApproval} disabled={revoking} style={{ flex: 1, background: "#b36a00" }}>
+              {revoking ? <><span className="spinner" /> Revoking...</> : "Confirm revoke"}
+            </button>
+            <button className="btn-ghost" onClick={() => { setShowRevoke(false); setRevokeReason("") }} style={{ flex: 1 }}>Cancel</button>
           </div>
         </div>
+      )}
+    </div>
+  )}
+
+  {/* Email notification toggle */}
+  <div style={{ background: "#fff", border: "1px solid #e8e8e8", borderRadius: "12px", padding: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+    <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "12px" }}>
+      <i className="ti ti-mail" style={{ fontSize: "15px", marginRight: "6px", color: "#C0392B" }} />
+      Email notifications
+    </h3>
+    <div onClick={handleEmailToggle} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", cursor: "pointer", padding: "10px 12px", background: request.email_toggle ? "#f0faf4" : "#fafafa", borderRadius: "8px", border: `1px solid ${request.email_toggle ? "#a8dfc0" : "#e8e8e8"}` }}>
+      <p style={{ fontSize: "13px", color: request.email_toggle ? "#1a7a40" : "#6b6b6b", fontWeight: "500" }}>
+        {request.email_toggle ? "Notifications enabled" : "Notifications disabled"}
+      </p>
+      <div style={{ width: "36px", height: "20px", borderRadius: "10px", background: request.email_toggle ? "#1a7a40" : "#d0d0d0", position: "relative", transition: "background 0.2s" }}>
+        <div style={{ width: "14px", height: "14px", borderRadius: "50%", background: "#fff", position: "absolute", top: "3px", left: request.email_toggle ? "19px" : "3px", transition: "left 0.2s" }} />
       </div>
+    </div>
+  </div>
+
+</div>
+    </div>
     </div>
   );
 }
