@@ -620,7 +620,7 @@ export default function Requests({ agent, onNavigate }) {
               ) : requests.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={canAssign ? 8 : 7}
+                    colSpan={canAssign ? 12 : 11}
                     style={{
                       padding: "40px",
                       textAlign: "center",
@@ -777,60 +777,52 @@ export default function Requests({ agent, onNavigate }) {
                           padding: "14px 16px",
                           color: "#6b6b6b",
                           whiteSpace: "nowrap",
+                          fontSize: "12px",
                         }}
                       >
-                        <td
-                          style={{
-                            padding: "14px 16px",
-                            color: "#6b6b6b",
-                            whiteSpace: "nowrap",
-                            fontSize: "12px",
-                          }}
-                        >
-                          {formatDate(req.submitted_at || req.created_at)}
-                        </td>
-                        <td
-                          style={{
-                            padding: "14px 16px",
-                            color: "#6b6b6b",
-                            whiteSpace: "nowrap",
-                            fontSize: "12px",
-                          }}
-                        >
-                          {req.assigned_at ? (
-                            formatDate(req.assigned_at)
-                          ) : (
-                            <span style={{ color: "#d0d0d0" }}>—</span>
-                          )}
-                        </td>
-                        <td
-                          style={{
-                            padding: "14px 16px",
-                            color: "#6b6b6b",
-                            whiteSpace: "nowrap",
-                            fontSize: "12px",
-                          }}
-                        >
-                          {req.first_response_at ? (
-                            formatDate(req.first_response_at)
-                          ) : (
-                            <span style={{ color: "#d0d0d0" }}>—</span>
-                          )}
-                        </td>
-                        <td
-                          style={{
-                            padding: "14px 16px",
-                            color: "#6b6b6b",
-                            whiteSpace: "nowrap",
-                            fontSize: "12px",
-                          }}
-                        >
-                          {req.resolved_at ? (
-                            formatDate(req.resolved_at)
-                          ) : (
-                            <span style={{ color: "#d0d0d0" }}>—</span>
-                          )}
-                        </td>
+                        {formatDate(req.submitted_at || req.created_at)}
+                      </td>
+                      <td
+                        style={{
+                          padding: "14px 16px",
+                          color: "#6b6b6b",
+                          whiteSpace: "nowrap",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {req.assigned_at ? (
+                          formatDate(req.assigned_at)
+                        ) : (
+                          <span style={{ color: "#d0d0d0" }}>—</span>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          padding: "14px 16px",
+                          color: "#6b6b6b",
+                          whiteSpace: "nowrap",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {req.first_response_at ? (
+                          formatDate(req.first_response_at)
+                        ) : (
+                          <span style={{ color: "#d0d0d0" }}>—</span>
+                        )}
+                      </td>
+                      <td
+                        style={{
+                          padding: "14px 16px",
+                          color: "#6b6b6b",
+                          whiteSpace: "nowrap",
+                          fontSize: "12px",
+                        }}
+                      >
+                        {req.resolved_at ? (
+                          formatDate(req.resolved_at)
+                        ) : (
+                          <span style={{ color: "#d0d0d0" }}>—</span>
+                        )}
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <i
