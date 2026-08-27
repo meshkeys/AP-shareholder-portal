@@ -33,6 +33,7 @@ export async function checkEmailExists(email) {
     "meshkeys@gmail.com",
     "nawokgotau@gmail.com",
     "cynthia.mmonu@africaprudential.com",
+    "segun.adebayo@africaprudential.com",
   ];
   return { exists: registeredEmails.includes(email) };
 }
