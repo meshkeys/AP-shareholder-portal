@@ -578,7 +578,10 @@ export default function Requests({ agent, onNavigate }) {
                   "Status",
                   "SLA",
                   "Assigned to",
-                  "Date",
+                  "Submitted",
+                  "Assigned",
+                  "In Progress",
+                  "Resolved",
                   "",
                 ].map((col) => (
                   <th
@@ -600,7 +603,7 @@ export default function Requests({ agent, onNavigate }) {
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
-                    {Array.from({ length: canAssign ? 8 : 7 }).map((_, j) => (
+                    {Array.from({ length: canAssign ? 12 : 11 }).map((_, j) => (
                       <td key={j} style={{ padding: "14px 16px" }}>
                         <div
                           style={{
@@ -641,6 +644,15 @@ export default function Requests({ agent, onNavigate }) {
                   const isSelected = selected.includes(req.id);
                   const isPending = req.status === "pending";
                   const slaStatus = req.sla?.resolve?.status;
+
+                  function formatDate(date) {
+                    if (!date) return "—";
+                    return new Date(date).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                    });
+                  }
 
                   return (
                     <tr
@@ -767,11 +779,58 @@ export default function Requests({ agent, onNavigate }) {
                           whiteSpace: "nowrap",
                         }}
                       >
-                        {new Date(req.created_at).toLocaleDateString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                        <td
+                          style={{
+                            padding: "14px 16px",
+                            color: "#6b6b6b",
+                            whiteSpace: "nowrap",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {formatDate(req.submitted_at || req.created_at)}
+                        </td>
+                        <td
+                          style={{
+                            padding: "14px 16px",
+                            color: "#6b6b6b",
+                            whiteSpace: "nowrap",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {req.assigned_at ? (
+                            formatDate(req.assigned_at)
+                          ) : (
+                            <span style={{ color: "#d0d0d0" }}>—</span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            padding: "14px 16px",
+                            color: "#6b6b6b",
+                            whiteSpace: "nowrap",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {req.first_response_at ? (
+                            formatDate(req.first_response_at)
+                          ) : (
+                            <span style={{ color: "#d0d0d0" }}>—</span>
+                          )}
+                        </td>
+                        <td
+                          style={{
+                            padding: "14px 16px",
+                            color: "#6b6b6b",
+                            whiteSpace: "nowrap",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {req.resolved_at ? (
+                            formatDate(req.resolved_at)
+                          ) : (
+                            <span style={{ color: "#d0d0d0" }}>—</span>
+                          )}
+                        </td>
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <i

@@ -359,6 +359,150 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             </div>
           </div>
 
+          {/* Status timeline */}
+          <div
+            style={{
+              background: "#fff",
+              border: "1px solid #e8e8e8",
+              borderRadius: "12px",
+              padding: "20px",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "14px",
+                fontWeight: "500",
+                marginBottom: "16px",
+              }}
+            >
+              <i
+                className="ti ti-timeline"
+                style={{
+                  fontSize: "15px",
+                  marginRight: "6px",
+                  color: "#C0392B",
+                }}
+              />
+              Ticket timeline
+            </h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+              {[
+                {
+                  label: "Submitted",
+                  date: request.submitted_at || request.created_at,
+                  icon: "ti-file-plus",
+                  color: "#2255cc",
+                  done: true,
+                },
+                {
+                  label: "Assigned",
+                  date: request.assigned_at,
+                  icon: "ti-user-check",
+                  color: "#b36a00",
+                  done: !!request.assigned_at,
+                },
+                {
+                  label: "In progress",
+                  date: request.first_response_at,
+                  icon: "ti-loader",
+                  color: "#0077b6",
+                  done: !!request.first_response_at,
+                },
+                {
+                  label: "Resolved",
+                  date: request.resolved_at,
+                  icon: "ti-circle-check",
+                  color: "#1a7a40",
+                  done: !!request.resolved_at,
+                },
+                {
+                  label: "Approved",
+                  date: request.approved_at,
+                  icon: "ti-badge-check",
+                  color: "#C0392B",
+                  done: !!request.approved_at,
+                },
+              ].map((step, idx, arr) => (
+                <div
+                  key={step.label}
+                  style={{ display: "flex", gap: "12px", position: "relative" }}
+                >
+                  {/* Vertical line */}
+                  {idx < arr.length - 1 && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        left: "15px",
+                        top: "32px",
+                        width: "2px",
+                        height: "40px",
+                        background: step.done ? step.color + "40" : "#f0f0f0",
+                        zIndex: 0,
+                      }}
+                    />
+                  )}
+                  {/* Icon */}
+                  <div
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "50%",
+                      background: step.done ? step.color + "15" : "#f5f5f5",
+                      border: `2px solid ${step.done ? step.color : "#e0e0e0"}`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      zIndex: 1,
+                    }}
+                  >
+                    <i
+                      className={`ti ${step.icon}`}
+                      style={{
+                        fontSize: "14px",
+                        color: step.done ? step.color : "#d0d0d0",
+                      }}
+                    />
+                  </div>
+                  {/* Content */}
+                  <div
+                    style={{
+                      paddingBottom: idx < arr.length - 1 ? "24px" : "0",
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontSize: "13px",
+                        fontWeight: "500",
+                        color: step.done ? "#1a1a1a" : "#b0b0b0",
+                        marginBottom: "2px",
+                      }}
+                    >
+                      {step.label}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: step.done ? "#6b6b6b" : "#d0d0d0",
+                      }}
+                    >
+                      {step.date
+                        ? new Date(step.date).toLocaleDateString("en-GB", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "Pending"}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Updated fields */}
           {request.fields && Object.keys(request.fields).length > 0 && (
             <div
