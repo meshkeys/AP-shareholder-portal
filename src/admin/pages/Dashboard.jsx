@@ -86,11 +86,18 @@ export default function Dashboard({ agent, onNavigate }) {
             subLabel="Awaiting assignment"
           />
           <StatCard
-            label="In progress"
-            value={stats.inProgress}
+            label="Open"
+            value={stats.open}
             icon="ti-loader"
             color="#0077b6"
             subLabel="Being processed"
+          />
+          <StatCard
+            label="Waiting on Customer"
+            value={stats.waitingOnCustomer}
+            icon="ti-clock-pause"
+            color="#b36a00"
+            subLabel="Awaiting shareholder response"
           />
           <StatCard
             label="Completed"
@@ -105,6 +112,13 @@ export default function Dashboard({ agent, onNavigate }) {
             icon="ti-circle-x"
             color="#C0392B"
             subLabel="Could not be processed"
+          />
+          <StatCard
+            label="Closed"
+            value={stats.closed}
+            icon="ti-lock"
+            color="#6b6b6b"
+            subLabel="Ticket closed"
           />
         </div>
       )}
@@ -315,10 +329,11 @@ export default function Dashboard({ agent, onNavigate }) {
                 <tr style={{ background: "#fafafa" }}>
                   {[
                     "Agent",
-                    "Assigned",
-                    "In Progress",
+                    "Open",
+                    "Waiting on Customer",
                     "Completed",
                     "Rejected",
+                    "Closed",
                     "Total",
                   ].map((col) => (
                     <th
@@ -359,20 +374,20 @@ export default function Dashboard({ agent, onNavigate }) {
                     <td
                       style={{
                         padding: "12px 16px",
-                        color: "#2255cc",
-                        fontWeight: "500",
-                      }}
-                    >
-                      {w.assigned}
-                    </td>
-                    <td
-                      style={{
-                        padding: "12px 16px",
                         color: "#0077b6",
                         fontWeight: "500",
                       }}
                     >
-                      {w.inProgress}
+                      {w.open}
+                    </td>
+                    <td
+                      style={{
+                        padding: "12px 16px",
+                        color: "#b36a00",
+                        fontWeight: "500",
+                      }}
+                    >
+                      {w.waitingOnCustomer}
                     </td>
                     <td
                       style={{
@@ -391,6 +406,15 @@ export default function Dashboard({ agent, onNavigate }) {
                       }}
                     >
                       {w.rejected}
+                    </td>
+                    <td
+                      style={{
+                        padding: "12px 16px",
+                        color: "#6b6b6b",
+                        fontWeight: "500",
+                      }}
+                    >
+                      {w.closed}
                     </td>
                     <td style={{ padding: "12px 16px", fontWeight: "600" }}>
                       {w.total}

@@ -57,11 +57,13 @@ router.get("/workload", authenticate, async (req, res) => {
       return {
         agent,
         total: agentRequests.length,
-        assigned: agentRequests.filter((r) => r.status === "assigned").length,
-        inProgress: agentRequests.filter((r) => r.status === "in_progress")
-          .length,
+        open: agentRequests.filter((r) => r.status === "open").length,
+        waitingOnCustomer: agentRequests.filter(
+          (r) => r.status === "waiting_on_customer",
+        ).length,
         completed: agentRequests.filter((r) => r.status === "completed").length,
         rejected: agentRequests.filter((r) => r.status === "rejected").length,
+        closed: agentRequests.filter((r) => r.status === "closed").length,
         slaBreached: agentRequests.filter((r) => r.sla_resolve_breached).length,
       };
     });

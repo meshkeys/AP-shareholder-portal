@@ -96,10 +96,13 @@ router.get("/stats/summary", authenticate, async (req, res) => {
     const stats = {
       total: data.length,
       pending: data.filter((r) => r.status === "pending").length,
-      assigned: data.filter((r) => r.status === "assigned").length,
-      inProgress: data.filter((r) => r.status === "in_progress").length,
+      open: data.filter((r) => r.status === "open").length,
+      waitingOnCustomer: data.filter((r) => r.status === "waiting_on_customer")
+        .length,
+      approved: data.filter((r) => r.status === "approved").length,
       completed: data.filter((r) => r.status === "completed").length,
       rejected: data.filter((r) => r.status === "rejected").length,
+      closed: data.filter((r) => r.status === "closed").length,
       slaBreached: data.filter((r) => r.sla_resolve_breached).length,
       byType: {
         nameChange: data.filter((r) => r.request_type === "nameChange").length,
@@ -238,9 +241,8 @@ router.patch("/:id/assign", authenticate, async (req, res) => {
 
     // Only reset to assigned if currently pending or assigned
     // Keep in_progress status if already being worked on
-    const newStatus = ["pending", "assigned"].includes(currentRequest?.status)
-      ? "assigned"
-      : currentRequest?.status;
+    const newStatus =
+      currentRequest?.status === "pending" ? "open" : currentRequest?.status;
 
     const { data: request, error } = await supabase
       .from("requests")
@@ -287,24 +289,21 @@ router.patch("/:id/status", authenticate, async (req, res) => {
   const { id: agentId, fullName, role } = req.agent;
 
   const validStatuses = [
-    "in_progress",
+    "open",
     "waiting_on_customer",
     "approved",
+    "completed",
     "rejected",
+    "closed",
   ];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ error: "Invalid status." });
   }
 
-  // Agents cannot approve — only in_progress and waiting_on_customer
-  if (
-    role === "agent" &&
-    !["in_progress", "waiting_on_customer"].includes(status)
-  ) {
-    return res.status(403).json({
-      error:
-        "Agents can only move tickets to In Progress or Waiting on Customer.",
-    });
+  // Agents can only move to these statuses
+  const agentAllowedStatuses = ["waiting_on_customer", "approved", "closed"];
+  if (role === "agent" && !agentAllowedStatuses.includes(status)) {
+    return res.status(403).json({ error: "Access denied." });
   }
 
   try {
@@ -313,6 +312,23 @@ router.patch("/:id/status", authenticate, async (req, res) => {
       .select("*")
       .eq("id", id)
       .single();
+
+    if (!request) {
+      return res.status(404).json({ error: "Request not found." });
+    }
+
+    // Only supervisor/admin/lead_supervisor can close tickets manually
+    // Agents can only close after completed
+    if (
+      status === "closed" &&
+      role === "agent" &&
+      request.status !== "completed"
+    ) {
+      return res
+        .status(403)
+        .json({ error: "You can only close a completed ticket." });
+    }
+
     const { data: settings } = await supabase
       .from("system_settings")
       .select("*")
@@ -324,26 +340,17 @@ router.patch("/:id/status", authenticate, async (req, res) => {
     if (note) updateData.internal_notes = note;
 
     // Set timestamps based on status
-    if (status === "in_progress" && !request.first_response_at) {
+    if (status === "open" && !request.first_response_at) {
       updateData.first_response_at = now;
-      updateData.sla_response_breached = getSLAStatus(request, {
-        assignHours: settings.sla_assign_hours,
-        responseHours: settings.sla_response_hours,
-        resolveHours: settings.sla_resolve_hours,
-      }).response.breached;
     }
 
     if (status === "waiting_on_customer") {
       updateData.waiting_since = now;
     }
 
-    if (["approved", "rejected", "closed"].includes(status)) {
-      updateData.resolved_at = now;
-      updateData.sla_resolve_breached = getSLAStatus(request, {
-        assignHours: settings.sla_assign_hours,
-        responseHours: settings.sla_response_hours,
-        resolveHours: settings.sla_resolve_hours,
-      }).resolve.breached;
+    if (status === "closed") {
+      updateData.closed_at = now;
+      updateData.closed_reason = "Manually closed by agent after completion.";
     }
 
     // If approved — fire to external app immediately
@@ -526,15 +533,16 @@ router.post("/bulk-assign", authenticate, async (req, res) => {
 
     const now = new Date().toISOString();
 
-    // Update all selected requests
+    // Get each request current status and set appropriately
     const { error } = await supabase
       .from("requests")
       .update({
         assigned_to: agentId,
         assigned_at: now,
+        status: "open",
       })
       .in("id", requestIds)
-      .not("status", "in", '("completed","approved")');
+      .not("status", "in", '("completed","closed")');
 
     if (error) throw error;
 
@@ -722,6 +730,64 @@ router.post("/:id/revoke-approval", authenticate, async (req, res) => {
   } catch (err) {
     console.error("Revoke approval error:", err);
     res.status(500).json({ error: "Failed to revoke approval." });
+  }
+});
+
+// ── POST /api/requests/:id/external-callback ──────────────────────────────────
+// Called by the external app to report back whether a synced request was accepted or rejected.
+router.post("/:id/external-callback", async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.replace("Bearer ", "");
+  if (
+    !process.env.EXTERNAL_APP_TOKEN ||
+    token !== process.env.EXTERNAL_APP_TOKEN
+  ) {
+    return res.status(401).json({ error: "Unauthorized." });
+  }
+
+  try {
+    const { data: request } = await supabase
+      .from("requests")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (!request) {
+      return res.status(404).json({ error: "Request not found." });
+    }
+
+    if (status === "accepted") {
+      await supabase
+        .from("requests")
+        .update({ status: "completed", external_sync: true })
+        .eq("id", request.id);
+
+      await supabase.from("activity_log").insert([
+        {
+          request_id: request.id,
+          agent_id: null,
+          action: "external_accepted",
+          details: "Request accepted by external app.",
+        },
+      ]);
+    } else if (status === "rejected") {
+      await supabase.from("activity_log").insert([
+        {
+          request_id: request.id,
+          agent_id: null,
+          action: "external_rejected",
+          details: "Request rejected by external app.",
+        },
+      ]);
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("External callback error:", err);
+    res.status(500).json({ error: "Failed to process external callback." });
   }
 });
 

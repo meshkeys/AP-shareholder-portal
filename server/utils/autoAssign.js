@@ -168,7 +168,7 @@ async function runAutoAssign() {
         .from("requests")
         .update({
           assigned_to: agentId,
-          status: "assigned",
+          status: "open",
           assigned_at: now,
         })
         .in("id", ticketIds);

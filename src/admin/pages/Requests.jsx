@@ -10,10 +10,12 @@ import { exportToFile, formatRequestsForExport } from "../utils/exportData";
 const STATUS_OPTIONS = [
   { value: "", label: "All statuses" },
   { value: "pending", label: "Pending" },
-  { value: "assigned", label: "Assigned" },
-  { value: "in_progress", label: "In Progress" },
+  { value: "open", label: "Open" },
+  { value: "waiting_on_customer", label: "Waiting on Customer" },
+  { value: "approved", label: "Approved" },
   { value: "completed", label: "Completed" },
   { value: "rejected", label: "Rejected" },
+  { value: "closed", label: "Closed" },
 ];
 
 const TYPE_OPTIONS = [

@@ -1,71 +1,5 @@
 import React from "react";
 
-const STATUS_CONFIG = {
-  pending: {
-    label: "Pending",
-    background: "#fff8e6",
-    color: "#b36a00",
-    border: "#f5d78e",
-    icon: "ti-clock",
-  },
-  assigned: {
-    label: "Assigned",
-    background: "#f0f4ff",
-    color: "#2255cc",
-    border: "#c0d0f5",
-    icon: "ti-user-check",
-  },
-  in_progress: {
-    label: "In Progress",
-    background: "#f0f9ff",
-    color: "#0077b6",
-    border: "#b0dcf5",
-    icon: "ti-loader",
-  },
-  waiting_on_customer: {
-    label: "Waiting on Customer",
-    background: "#fff8e6",
-    color: "#b36a00",
-    border: "#f5d78e",
-    icon: "ti-clock-pause",
-  },
-  closed: {
-    label: "Closed",
-    background: "#f5f5f5",
-    color: "#6b6b6b",
-    border: "#e0e0e0",
-    icon: "ti-lock",
-  },
-  completed: {
-    label: "Completed",
-    background: "#f0faf4",
-    color: "#1a7a40",
-    border: "#a8dfc0",
-    icon: "ti-circle-check",
-  },
-  rejected: {
-    label: "Rejected",
-    background: "#fdf1f0",
-    color: "#C0392B",
-    border: "#e8b4af",
-    icon: "ti-circle-x",
-  },
-  approved: {
-    label: "Approved",
-    background: "#f0faf4",
-    color: "#1a7a40",
-    border: "#a8dfc0",
-    icon: "ti-circle-check",
-  },
-  approval_revoked: {
-    label: "Approval Revoked",
-    background: "#fff8e6",
-    color: "#b36a00",
-    border: "#f5d78e",
-    icon: "ti-rotate",
-  },
-};
-
 const TYPE_CONFIG = {
   nameChange: { label: "Name Change", icon: "ti-user", color: "#7c3aed" },
   kycUpdate: { label: "KYC Update", icon: "ti-id", color: "#0077b6" },
@@ -87,12 +21,64 @@ const TYPE_CONFIG = {
 };
 
 export function StatusBadge({ status }) {
+  const STATUS_CONFIG = {
+    pending: {
+      label: "Pending",
+      background: "#fafafa",
+      color: "#6b6b6b",
+      border: "#e0e0e0",
+      icon: "ti-clock",
+    },
+    open: {
+      label: "Open",
+      background: "#f0f4ff",
+      color: "#2255cc",
+      border: "#c0d0f5",
+      icon: "ti-folder-open",
+    },
+    waiting_on_customer: {
+      label: "Waiting on Customer",
+      background: "#fff8e6",
+      color: "#b36a00",
+      border: "#f5d78e",
+      icon: "ti-clock-pause",
+    },
+    approved: {
+      label: "Approved",
+      background: "#fdf1f0",
+      color: "#C0392B",
+      border: "#e8b4af",
+      icon: "ti-circle-check",
+    },
+    completed: {
+      label: "Completed",
+      background: "#f0faf4",
+      color: "#1a7a40",
+      border: "#a8dfc0",
+      icon: "ti-checks",
+    },
+    rejected: {
+      label: "Rejected",
+      background: "#fdf1f0",
+      color: "#C0392B",
+      border: "#e8b4af",
+      icon: "ti-circle-x",
+    },
+    closed: {
+      label: "Closed",
+      background: "#f5f5f5",
+      color: "#6b6b6b",
+      border: "#e0e0e0",
+      icon: "ti-lock",
+    },
+  };
+
   const config = STATUS_CONFIG[status] || {
     label: status,
-    background: "#f0f0f0",
+    background: "#f8f8f8",
     color: "#6b6b6b",
-    border: "#d0d0d0",
-    icon: "ti-point",
+    border: "#e0e0e0",
+    icon: "ti-circle",
   };
 
   return (
