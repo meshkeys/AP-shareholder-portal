@@ -7,8 +7,6 @@ import {
   updateRequestStatus,
   addNote,
   toggleEmailNotification,
-  approveRequest,
-  revokeApproval,
   getCannedResponses,
 } from "../services/adminApi";
 
@@ -31,8 +29,7 @@ const DEFAULT_MESSAGES = {
     "We are pleased to inform you that your request has been successfully processed and completed.",
   rejected:
     "We regret to inform you that we were unable to process your request. Please see the reason provided and contact our support team for further assistance.",
-  closed:
-    "Your request has been closed. Please contact us if you need further assistance.",
+  closed: "Your request has been closed. Thank you for using ShareReg Portal.",
 };
 
 export default function RequestDetail({ agent, requestId, onBack }) {
@@ -42,27 +39,30 @@ export default function RequestDetail({ agent, requestId, onBack }) {
   const [agents, setAgents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+
+  // Assign
   const [selectedAgent, setSelectedAgent] = useState("");
   const [assigning, setAssigning] = useState(false);
+
+  // Status update
   const [newStatus, setNewStatus] = useState("");
   const [note, setNote] = useState("");
   const [sendEmail, setSendEmail] = useState(true);
   const [emailMessage, setEmailMessage] = useState("");
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [addingNote, setAddingNote] = useState(false);
-  const [noteText, setNoteText] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
-  const [approving, setApproving] = useState(false);
-  const [revoking, setRevoking] = useState(false);
-  const [revokeReason, setRevokeReason] = useState("");
-  const [showRevoke, setShowRevoke] = useState(false);
+
+  // Canned responses
   const [cannedResponses, setCannedResponses] = useState([]);
   const [selectedCanned, setSelectedCanned] = useState("");
   const [flaggedItems, setFlaggedItems] = useState([]);
   const [availableFlagItems, setAvailableFlagItems] = useState([]);
-  const [sendingFlag, setSendingFlag] = useState(false);
-  const [closeNote, setCloseNote] = useState("");
-  const [closing, setClosing] = useState(false);
+
+  // Notes
+  const [noteText, setNoteText] = useState("");
+  const [addingNote, setAddingNote] = useState(false);
+
+  // Close ticket
   const [closeNote, setCloseNote] = useState("");
   const [closing, setClosing] = useState(false);
 
@@ -80,8 +80,12 @@ export default function RequestDetail({ agent, requestId, onBack }) {
       setNoteText(res.request.internal_notes || "");
 
       // Load canned responses for this request type
-      const cannedRes = await getCannedResponses(res.request.request_type);
-      setCannedResponses(cannedRes.responses || []);
+      try {
+        const cannedRes = await getCannedResponses(res.request.request_type);
+        setCannedResponses(cannedRes.responses || []);
+      } catch (e) {
+        console.error("Canned responses failed:", e.message);
+      }
 
       if (["admin", "supervisor", "lead_supervisor"].includes(agent.role)) {
         const agentsRes = await getAgents();
@@ -126,6 +130,9 @@ export default function RequestDetail({ agent, requestId, onBack }) {
       setNewStatus("");
       setNote("");
       setEmailMessage("");
+      setSelectedCanned("");
+      setFlaggedItems([]);
+      setAvailableFlagItems([]);
       loadData();
     } catch (err) {
       setError(err.message);
@@ -139,7 +146,8 @@ export default function RequestDetail({ agent, requestId, onBack }) {
     setAddingNote(true);
     try {
       await addNote(requestId, noteText);
-      setSuccessMsg("Note saved successfully.");
+      setSuccessMsg("Note added.");
+      setNoteText("");
       loadData();
     } catch (err) {
       setError(err.message);
@@ -157,67 +165,15 @@ export default function RequestDetail({ agent, requestId, onBack }) {
     }
   }
 
-  async function handleApprove() {
-    setApproving(true);
-    try {
-      const res = await approveRequest(requestId);
-      setSuccessMsg(
-        res.synced
-          ? `Request approved and synced to external app. External ref: ${res.externalRef}`
-          : "Request approved successfully. External sync pending — add endpoint to activate.",
-      );
-      loadData();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setApproving(false);
-    }
-  }
-
-  async function handleRevokeApproval() {
-    setRevoking(true);
-    try {
-      await revokeApproval(requestId, revokeReason);
-      setSuccessMsg("Approval revoked successfully.");
-      setShowRevoke(false);
-      setRevokeReason("");
-      loadData();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setRevoking(false);
-    }
-  }
-
   async function handleClose() {
     setClosing(true);
     try {
       await updateRequestStatus(
         requestId,
         "closed",
-        null,
+        closeNote,
         true,
-        closeNote.trim() || DEFAULT_MESSAGES.closed,
-      );
-      setSuccessMsg("Ticket closed successfully.");
-      setCloseNote("");
-      loadData();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setClosing(false);
-    }
-  }
-
-  async function handleClose() {
-    setClosing(true);
-    try {
-      await updateRequestStatus(
-        requestId,
-        "closed",
-        closeNote,
-        !!closeNote,
-        closeNote,
+        closeNote || DEFAULT_MESSAGES.closed,
       );
       setSuccessMsg("Ticket closed successfully.");
       setCloseNote("");
@@ -256,6 +212,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
     );
 
   const availableStatuses = STATUS_ACTIONS[request?.status] || [];
+
   const selectStyle = {
     width: "100%",
     padding: "9px 12px",
@@ -266,6 +223,18 @@ export default function RequestDetail({ agent, requestId, onBack }) {
     color: "#1a1a1a",
     outline: "none",
   };
+
+  function statusLabel(s) {
+    const map = {
+      waiting_on_customer: "Waiting on Customer",
+      open: "Open",
+      closed: "Closed",
+      approved: "Approve",
+      completed: "Completed",
+      rejected: "Rejected",
+    };
+    return map[s] || s.charAt(0).toUpperCase() + s.slice(1);
+  }
 
   return (
     <div style={{ padding: "24px", maxWidth: "1000px", margin: "0 auto" }}>
@@ -279,7 +248,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
         requests
       </button>
 
-      {/* Success message */}
+      {/* Success */}
       {successMsg && (
         <div className="alert alert-success" style={{ marginBottom: "16px" }}>
           <i
@@ -418,7 +387,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             </div>
           </div>
 
-          {/* Status timeline */}
+          {/* Ticket timeline */}
           <div
             style={{
               background: "#fff",
@@ -445,7 +414,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
               />
               Ticket timeline
             </h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
               {[
                 {
                   label: "Submitted",
@@ -460,13 +429,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   icon: "ti-user-check",
                   color: "#b36a00",
                   done: !!request.assigned_at,
-                },
-                {
-                  label: "In progress",
-                  date: request.first_response_at,
-                  icon: "ti-loader",
-                  color: "#0077b6",
-                  done: !!request.first_response_at,
                 },
                 {
                   label: "Resolved",
@@ -487,7 +449,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   key={step.label}
                   style={{ display: "flex", gap: "12px", position: "relative" }}
                 >
-                  {/* Vertical line */}
                   {idx < arr.length - 1 && (
                     <div
                       style={{
@@ -501,7 +462,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                       }}
                     />
                   )}
-                  {/* Icon */}
                   <div
                     style={{
                       width: "32px",
@@ -524,7 +484,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                       }}
                     />
                   </div>
-                  {/* Content */}
                   <div
                     style={{
                       paddingBottom: idx < arr.length - 1 ? "24px" : "0",
@@ -562,7 +521,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             </div>
           </div>
 
-          {/* Updated fields */}
+          {/* Requested changes */}
           {request.fields && Object.keys(request.fields).length > 0 && (
             <div
               style={{
@@ -681,7 +640,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             )}
           </div>
 
-          {/* Activity log & Notes */}
+          {/* Activity & Notes */}
           <div
             style={{
               background: "#fff",
@@ -711,13 +670,12 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   log.action === "external_accepted" ||
                   log.action === "external_rejected";
                 const isNote = log.action === "note_added";
-                const isFlag = log.action === "flagged";
-                const isWaiting =
-                  log.action === "status_changed" &&
-                  log.details?.includes("waiting_on_customer");
+                const isFlag =
+                  log.action === "flagged" ||
+                  log.action === "waiting_on_customer";
 
-                let dotColor = "#6b6b6b";
-                let bgColor = "#f8f8f8";
+                let dotColor = "#6b6b6b",
+                  bgColor = "#f8f8f8";
                 if (isExternal) {
                   dotColor = "#C0392B";
                   bgColor = "#fdf1f0";
@@ -749,7 +707,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                           : "none",
                     }}
                   >
-                    {/* Icon */}
                     <div
                       style={{
                         width: "32px",
@@ -769,7 +726,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                       />
                     </div>
                     <div style={{ flex: 1 }}>
-                      {/* Who */}
                       <div
                         style={{
                           display: "flex",
@@ -803,7 +759,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                           </span>
                         )}
                       </div>
-                      {/* Details */}
                       <p
                         style={{
                           fontSize: "13px",
@@ -813,7 +768,6 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                       >
                         {log.details}
                       </p>
-                      {/* Time */}
                       <p
                         style={{
                           fontSize: "11px",
@@ -835,7 +789,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
               })
             )}
 
-            {/* Add new note */}
+            {/* Add note */}
             <div
               style={{
                 borderTop: "1px solid #f0f0f0",
@@ -895,7 +849,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
 
         {/* ── RIGHT COLUMN ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {/* Assign request */}
+          {/* Assign / Reassign — supervisors and admins only */}
           {["admin", "supervisor", "lead_supervisor"].includes(agent.role) && (
             <div
               style={{
@@ -957,7 +911,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             </div>
           )}
 
-          {/* Update status */}
+          {/* Update status — shown when there are available transitions */}
           {availableStatuses.length > 0 && (
             <div
               style={{
@@ -986,27 +940,27 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                 Update status
               </h3>
 
+              {/* Status dropdown */}
               <select
                 value={newStatus}
                 onChange={(e) => {
                   setNewStatus(e.target.value);
                   setEmailMessage(DEFAULT_MESSAGES[e.target.value] || "");
+                  setSelectedCanned("");
+                  setFlaggedItems([]);
+                  setAvailableFlagItems([]);
                 }}
                 style={{ ...selectStyle, marginBottom: "10px" }}
               >
                 <option value="">Select new status</option>
                 {availableStatuses.map((s) => (
                   <option key={s} value={s}>
-                    {s === "waiting_on_customer"
-                      ? "Waiting on Customer"
-                      : s === "open"
-                        ? "Open"
-                        : s.charAt(0).toUpperCase() + s.slice(1)}
+                    {statusLabel(s)}
                   </option>
                 ))}
               </select>
 
-              {/* Canned responses dropdown — shown when waiting on customer */}
+              {/* Canned responses — only when waiting on customer */}
               {newStatus === "waiting_on_customer" && (
                 <div style={{ marginBottom: "10px" }}>
                   <label
@@ -1043,7 +997,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                     ))}
                   </select>
 
-                  {/* Flagged items checkboxes */}
+                  {/* Flagged items */}
                   {availableFlagItems.length > 0 && (
                     <div
                       style={{
@@ -1069,13 +1023,13 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                       {availableFlagItems.map((item, idx) => (
                         <div
                           key={idx}
-                          onClick={() => {
+                          onClick={() =>
                             setFlaggedItems((prev) =>
                               prev.includes(item)
                                 ? prev.filter((i) => i !== item)
                                 : [...prev, item],
-                            );
-                          }}
+                            )
+                          }
                           style={{
                             display: "flex",
                             alignItems: "center",
@@ -1127,6 +1081,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                 </div>
               )}
 
+              {/* Note */}
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
@@ -1191,7 +1146,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                 </p>
               </div>
 
-              {/* Editable email message */}
+              {/* Email message */}
               {sendEmail && newStatus && (
                 <div style={{ marginBottom: "10px" }}>
                   <label
@@ -1244,8 +1199,8 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             </div>
           )}
 
-          {/* Approve request */}
-          {request.status === "in_progress" && (
+          {/* Approve button — shown when status is open */}
+          {request.status === "open" && (
             <div
               style={{
                 background: "#fff",
@@ -1285,150 +1240,21 @@ export default function RequestDetail({ agent, requestId, onBack }) {
               </p>
               <button
                 className="btn-primary"
-                onClick={handleApprove}
-                disabled={approving}
                 style={{ background: "#1a7a40" }}
+                onClick={() => handleStatusUpdate()}
+                disabled={updatingStatus}
+                onMouseDown={() => {
+                  setNewStatus("approved");
+                  setEmailMessage(DEFAULT_MESSAGES.approved);
+                }}
               >
-                {approving ? (
-                  <>
-                    <span className="spinner" /> Approving...
-                  </>
-                ) : (
-                  <>
-                    <i className="ti ti-check" style={{ fontSize: "15px" }} />{" "}
-                    Approve
-                  </>
-                )}
+                <i className="ti ti-check" style={{ fontSize: "15px" }} />{" "}
+                Approve
               </button>
             </div>
           )}
 
-          {/* Revoke approval */}
-          {request.status === "approved" && (
-            <div
-              style={{
-                background: "#fff",
-                border: "1px solid #f5d78e",
-                borderRadius: "12px",
-                padding: "16px",
-                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  marginBottom: "8px",
-                }}
-              >
-                <i
-                  className="ti ti-rotate"
-                  style={{
-                    fontSize: "15px",
-                    marginRight: "6px",
-                    color: "#b36a00",
-                  }}
-                />
-                Approval status
-              </h3>
-              <div
-                style={{
-                  padding: "10px 12px",
-                  borderRadius: "8px",
-                  background: request.external_sync ? "#f0faf4" : "#fff8e6",
-                  border: `1px solid ${request.external_sync ? "#a8dfc0" : "#f5d78e"}`,
-                  marginBottom: "12px",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    color: request.external_sync ? "#1a7a40" : "#b36a00",
-                  }}
-                >
-                  <i
-                    className={`ti ${request.external_sync ? "ti-cloud-check" : "ti-cloud-off"}`}
-                    style={{ fontSize: "13px", marginRight: "5px" }}
-                  />
-                  {request.external_sync
-                    ? `Synced — Ref: ${request.external_ref}`
-                    : "Awaiting external app response"}
-                </p>
-              </div>
-              {!showRevoke ? (
-                <button
-                  className="btn-ghost"
-                  onClick={() => setShowRevoke(true)}
-                  style={{ fontSize: "13px" }}
-                >
-                  <i
-                    className="ti ti-arrow-back"
-                    style={{ fontSize: "14px" }}
-                  />{" "}
-                  Revoke approval
-                </button>
-              ) : (
-                <div>
-                  <label
-                    style={{
-                      fontSize: "12px",
-                      color: "#6b6b6b",
-                      marginBottom: "5px",
-                      display: "block",
-                    }}
-                  >
-                    Reason for revoking
-                  </label>
-                  <textarea
-                    value={revokeReason}
-                    onChange={(e) => setRevokeReason(e.target.value)}
-                    placeholder="Enter reason..."
-                    rows={2}
-                    style={{
-                      width: "100%",
-                      padding: "8px 10px",
-                      fontSize: "13px",
-                      border: "1px solid #e0e0e0",
-                      borderRadius: "6px",
-                      resize: "none",
-                      fontFamily: "inherit",
-                      outline: "none",
-                      marginBottom: "8px",
-                    }}
-                  />
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <button
-                      className="btn-primary"
-                      onClick={handleRevokeApproval}
-                      disabled={revoking}
-                      style={{ flex: 1, background: "#b36a00" }}
-                    >
-                      {revoking ? (
-                        <>
-                          <span className="spinner" /> Revoking...
-                        </>
-                      ) : (
-                        "Confirm revoke"
-                      )}
-                    </button>
-                    <button
-                      className="btn-ghost"
-                      onClick={() => {
-                        setShowRevoke(false);
-                        setRevokeReason("");
-                      }}
-                      style={{ flex: 1 }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Close ticket */}
+          {/* Close ticket — shown when completed */}
           {request.status === "completed" && (
             <div
               style={{
@@ -1504,7 +1330,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             </div>
           )}
 
-          {/* Email notification toggle */}
+          {/* Email notifications toggle */}
           <div
             style={{
               background: "#fff",
@@ -1624,6 +1450,9 @@ function formatKey(key) {
     occupation: "Occupation",
     maritalStatus: "Marital status",
     gender: "Gender",
+    mandateCode: "Mandate code",
+    cscsNumber: "CHN/CSCS Number",
+    fullName: "Full name",
   };
   return map[key] || key;
 }
@@ -1640,6 +1469,9 @@ function getActionIcon(action) {
     approval_revoked: "ti-rotate",
     external_accepted: "ti-cloud-check",
     external_rejected: "ti-cloud-off",
+    flagged: "ti-flag",
+    auto_closed: "ti-lock",
+    resubmitted: "ti-refresh-alert",
   };
   return icons[action] || "ti-point";
 }
