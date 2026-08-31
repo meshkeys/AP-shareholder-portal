@@ -7,6 +7,10 @@ import {
   updateEscalationRule,
   deleteEscalationRule,
   runEscalationCheck,
+  getCannedResponses,
+  createCannedResponse,
+  updateCannedResponse,
+  deleteCannedResponse,
 } from "../services/adminApi";
 
 const TRIGGER_TYPES = [
@@ -37,6 +41,16 @@ export default function Settings({ agent }) {
   const [showRuleForm, setShowRuleForm] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
   const [ruleForm, setRuleForm] = useState(emptyRule);
+  const [cannedResponses, setCannedResponses] = useState([]);
+  const [showCannedForm, setShowCannedForm] = useState(false);
+  const [editingCanned, setEditingCanned] = useState(null);
+  const [cannedForm, setCannedForm] = useState({
+    title: "",
+    requestType: "nameChange",
+    body: "",
+    flaggedItems: [],
+  });
+  const [newFlagItem, setNewFlagItem] = useState("");
 
   const isAdmin = agent.role === "admin";
   const canManageEscalations = ["admin", "lead_supervisor"].includes(
@@ -50,12 +64,14 @@ export default function Settings({ agent }) {
   async function loadData() {
     setLoading(true);
     try {
-      const [settingsRes, rulesRes] = await Promise.all([
+      const [settingsRes, rulesRes, cannedRes] = await Promise.all([
         isAdmin ? getSystemSettings() : Promise.resolve(null),
         canManageEscalations ? getEscalationRules() : Promise.resolve(null),
+        canManageEscalations ? getCannedResponses() : Promise.resolve(null),
       ]);
       if (settingsRes) setSettings(settingsRes.settings);
       if (rulesRes) setRules(rulesRes.rules || []);
+      if (cannedRes) setCannedResponses(cannedRes.responses || []);
     } catch (err) {
       setError(err.message || "Failed to load settings.");
     } finally {
@@ -126,6 +142,68 @@ export default function Settings({ agent }) {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleSaveCanned(e) {
+    e.preventDefault();
+    if (!cannedForm.title || !cannedForm.requestType || !cannedForm.body) {
+      setError("Title, request type and body are required.");
+      return;
+    }
+    setSaving(true);
+    try {
+      if (editingCanned) {
+        await updateCannedResponse(editingCanned.id, {
+          title: cannedForm.title,
+          body: cannedForm.body,
+          flaggedItems: cannedForm.flaggedItems,
+        });
+        setSuccessMsg("Canned response updated.");
+      } else {
+        await createCannedResponse({
+          title: cannedForm.title,
+          requestType: cannedForm.requestType,
+          body: cannedForm.body,
+          flaggedItems: cannedForm.flaggedItems,
+        });
+        setSuccessMsg("Canned response created.");
+      }
+      setShowCannedForm(false);
+      setEditingCanned(null);
+      setCannedForm({
+        title: "",
+        requestType: "nameChange",
+        body: "",
+        flaggedItems: [],
+      });
+      loadData();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteCanned(id) {
+    if (!window.confirm("Delete this canned response?")) return;
+    try {
+      await deleteCannedResponse(id);
+      setSuccessMsg("Canned response deleted.");
+      loadData();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  function handleEditCanned(r) {
+    setEditingCanned(r);
+    setCannedForm({
+      title: r.title,
+      requestType: r.request_type,
+      body: r.body,
+      flaggedItems: r.flagged_items || [],
+    });
+    setShowCannedForm(true);
   }
 
   async function handleToggleRule(rule) {
@@ -1018,6 +1096,408 @@ export default function Settings({ agent }) {
               </div>
             ))
           )}
+        </div>
+      )}
+
+      {/* ── Canned responses ── */}
+      {canManageEscalations && (
+        <div
+          style={{
+            background: "#fff",
+            border: "1px solid #e8e8e8",
+            borderRadius: "12px",
+            padding: "20px",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "20px",
+            }}
+          >
+            <div>
+              <h2
+                style={{
+                  fontSize: "15px",
+                  fontWeight: "500",
+                  marginBottom: "4px",
+                }}
+              >
+                <i
+                  className="ti ti-message-reply"
+                  style={{
+                    fontSize: "16px",
+                    marginRight: "8px",
+                    color: "#C0392B",
+                  }}
+                />
+                Canned responses
+              </h2>
+              <p style={{ fontSize: "12px", color: "#6b6b6b" }}>
+                Pre-written responses agents can use when flagging tickets.
+              </p>
+            </div>
+            <button
+              className="btn-primary"
+              style={{ width: "auto", padding: "7px 12px", fontSize: "13px" }}
+              onClick={() => {
+                setShowCannedForm(true);
+                setEditingCanned(null);
+                setCannedForm({
+                  title: "",
+                  requestType: "nameChange",
+                  body: "",
+                  flaggedItems: [],
+                });
+              }}
+            >
+              <i className="ti ti-plus" style={{ fontSize: "14px" }} /> Add
+              response
+            </button>
+          </div>
+
+          {/* Form */}
+          {showCannedForm && (
+            <div
+              style={{
+                background: "#fafafa",
+                border: "1px solid #e8e8e8",
+                borderRadius: "8px",
+                padding: "16px",
+                marginBottom: "16px",
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "14px",
+                  fontWeight: "500",
+                  marginBottom: "14px",
+                }}
+              >
+                {editingCanned ? "Edit canned response" : "New canned response"}
+              </h3>
+              <form onSubmit={handleSaveCanned} noValidate>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "12px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <div>
+                    <label
+                      style={{
+                        fontSize: "12px",
+                        color: "#6b6b6b",
+                        marginBottom: "5px",
+                        display: "block",
+                      }}
+                    >
+                      Title
+                    </label>
+                    <input
+                      type="text"
+                      value={cannedForm.title}
+                      onChange={(e) =>
+                        setCannedForm((p) => ({ ...p, title: e.target.value }))
+                      }
+                      placeholder="e.g. KYC — NIN Missing"
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      style={{
+                        fontSize: "12px",
+                        color: "#6b6b6b",
+                        marginBottom: "5px",
+                        display: "block",
+                      }}
+                    >
+                      Request type
+                    </label>
+                    <select
+                      value={cannedForm.requestType}
+                      onChange={(e) =>
+                        setCannedForm((p) => ({
+                          ...p,
+                          requestType: e.target.value,
+                        }))
+                      }
+                      style={inputStyle}
+                    >
+                      <option value="nameChange">Name Change</option>
+                      <option value="kycUpdate">KYC Update</option>
+                      <option value="addressUpdate">Address Update</option>
+                      <option value="signatureUpdate">Signature Update</option>
+                      <option value="nubanChange">NUBAN Change</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ marginBottom: "12px" }}>
+                  <label
+                    style={{
+                      fontSize: "12px",
+                      color: "#6b6b6b",
+                      marginBottom: "5px",
+                      display: "block",
+                    }}
+                  >
+                    Email body
+                  </label>
+                  <textarea
+                    value={cannedForm.body}
+                    onChange={(e) =>
+                      setCannedForm((p) => ({ ...p, body: e.target.value }))
+                    }
+                    rows={4}
+                    placeholder="Email body text..."
+                    style={{ ...inputStyle, resize: "vertical" }}
+                  />
+                </div>
+
+                {/* Flagged items */}
+                <div style={{ marginBottom: "12px" }}>
+                  <label
+                    style={{
+                      fontSize: "12px",
+                      color: "#6b6b6b",
+                      marginBottom: "5px",
+                      display: "block",
+                    }}
+                  >
+                    Flagged items (checkboxes shown to agent)
+                  </label>
+                  <div
+                    style={{ display: "flex", gap: "8px", marginBottom: "8px" }}
+                  >
+                    <input
+                      type="text"
+                      value={newFlagItem}
+                      onChange={(e) => setNewFlagItem(e.target.value)}
+                      placeholder="Type an item and press Add or Enter..."
+                      style={{ ...inputStyle, flex: 1 }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (newFlagItem.trim()) {
+                            setCannedForm((p) => ({
+                              ...p,
+                              flaggedItems: [
+                                ...p.flaggedItems,
+                                newFlagItem.trim(),
+                              ],
+                            }));
+                            setNewFlagItem("");
+                          }
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      style={{ width: "auto", padding: "8px 12px" }}
+                      onClick={() => {
+                        if (newFlagItem.trim()) {
+                          setCannedForm((p) => ({
+                            ...p,
+                            flaggedItems: [
+                              ...p.flaggedItems,
+                              newFlagItem.trim(),
+                            ],
+                          }));
+                          setNewFlagItem("");
+                        }
+                      }}
+                    >
+                      Add
+                    </button>
+                  </div>
+                  {cannedForm.flaggedItems.map((item, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "6px 10px",
+                        background: "#fdf1f0",
+                        border: "1px solid #e8b4af",
+                        borderRadius: "6px",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      <span
+                        style={{ flex: 1, fontSize: "12px", color: "#C0392B" }}
+                      >
+                        {item}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setCannedForm((p) => ({
+                            ...p,
+                            flaggedItems: p.flaggedItems.filter(
+                              (_, i) => i !== idx,
+                            ),
+                          }))
+                        }
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "#C0392B",
+                          padding: 0,
+                        }}
+                      >
+                        <i className="ti ti-x" style={{ fontSize: "13px" }} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button
+                    type="submit"
+                    className="btn-primary"
+                    style={{ width: "auto", padding: "8px 16px" }}
+                    disabled={saving}
+                  >
+                    {saving ? (
+                      <>
+                        <span className="spinner" /> Saving...
+                      </>
+                    ) : editingCanned ? (
+                      "Update"
+                    ) : (
+                      "Create"
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    style={{ width: "auto", padding: "8px 16px" }}
+                    onClick={() => {
+                      setShowCannedForm(false);
+                      setEditingCanned(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* List grouped by request type */}
+          {[
+            "nameChange",
+            "kycUpdate",
+            "addressUpdate",
+            "signatureUpdate",
+            "nubanChange",
+          ].map((type) => {
+            const typeLabels = {
+              nameChange: "Name Change",
+              kycUpdate: "KYC Update",
+              addressUpdate: "Address Update",
+              signatureUpdate: "Signature Update",
+              nubanChange: "NUBAN Change",
+            };
+            const typeResponses = cannedResponses.filter(
+              (r) => r.request_type === type,
+            );
+            if (!typeResponses.length) return null;
+            return (
+              <div key={type} style={{ marginBottom: "16px" }}>
+                <p
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: "500",
+                    color: "#6b6b6b",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                    marginBottom: "8px",
+                  }}
+                >
+                  {typeLabels[type]}
+                </p>
+                {typeResponses.map((r) => (
+                  <div
+                    key={r.id}
+                    style={{
+                      border: "1px solid #e8e8e8",
+                      borderRadius: "8px",
+                      padding: "12px 14px",
+                      marginBottom: "8px",
+                      background: "#fff",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "12px",
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <p
+                          style={{
+                            fontSize: "13px",
+                            fontWeight: "500",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          {r.title}
+                        </p>
+                        <p style={{ fontSize: "12px", color: "#6b6b6b" }}>
+                          {(r.flagged_items || []).length} flagged item
+                          {(r.flagged_items || []).length !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                      <div style={{ display: "flex", gap: "6px" }}>
+                        <button
+                          onClick={() => handleEditCanned(r)}
+                          style={{
+                            fontSize: "12px",
+                            padding: "4px 10px",
+                            borderRadius: "6px",
+                            border: "1px solid #c0d0f5",
+                            background: "#f0f4ff",
+                            color: "#2255cc",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Edit
+                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleDeleteCanned(r.id)}
+                            style={{
+                              fontSize: "12px",
+                              padding: "4px 10px",
+                              borderRadius: "6px",
+                              border: "1px solid #e8b4af",
+                              background: "#fdf1f0",
+                              color: "#C0392B",
+                              cursor: "pointer",
+                            }}
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

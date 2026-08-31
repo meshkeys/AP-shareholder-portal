@@ -291,6 +291,32 @@ export async function getCannedResponses(requestType) {
   return handleResponse(res);
 }
 
+export async function createCannedResponse(data) {
+  const res = await fetch(`${BASE_URL}/api/canned-responses`, {
+    method: "POST",
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(res);
+}
+
+export async function updateCannedResponse(id, data) {
+  const res = await fetch(`${BASE_URL}/api/canned-responses/${id}`, {
+    method: "PATCH",
+    headers: getHeaders(),
+    body: JSON.stringify(data),
+  });
+  return handleResponse(res);
+}
+
+export async function deleteCannedResponse(id) {
+  const res = await fetch(`${BASE_URL}/api/canned-responses/${id}`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  return handleResponse(res);
+}
+
 export async function sendFlagEmail(requestId, emailMessage, flaggedItems) {
   const res = await fetch(`${BASE_URL}/api/canned-responses/send-flag`, {
     method: "POST",
