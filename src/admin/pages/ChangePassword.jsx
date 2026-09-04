@@ -10,6 +10,7 @@ export default function ChangePassword({ agent, onDone }) {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
 
   function validate() {
     if (!currentPassword) return "Enter your temporary password.";
@@ -32,7 +33,24 @@ export default function ChangePassword({ agent, onDone }) {
     setLoading(true);
     try {
       await changePassword(agent.id, currentPassword, newPassword);
-      onDone();
+      setSuccessMsg("Password changed successfully! Redirecting to login...");
+      setTimeout(() => {
+        // Clear session and redirect to login
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminAgent");
+        window.location.href = "/admin";
+      }, 2000);
+      {
+        successMsg && (
+          <div className="alert alert-success" style={{ marginBottom: "16px" }}>
+            <i
+              className="ti ti-circle-check"
+              style={{ fontSize: "15px", flexShrink: 0 }}
+            />
+            {successMsg}
+          </div>
+        );
+      }
     } catch (err) {
       setError(err.message || "Failed to change password. Please try again.");
     } finally {

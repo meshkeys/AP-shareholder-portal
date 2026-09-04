@@ -186,9 +186,13 @@ router.post("/change-password", async (req, res) => {
 
     // Update password
     // Clear must_change_password flag
+    // Update password and clear must_change_password flag
     await supabase
       .from("agents")
-      .update({ must_change_password: false })
+      .update({
+        password_hash: passwordHash,
+        must_change_password: false,
+      })
       .eq("id", agentId);
 
     res.json({ success: true, message: "Password changed successfully." });
