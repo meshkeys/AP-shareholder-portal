@@ -169,7 +169,6 @@ export default function AdminNavbar({ agent, currentPage, onNavigate }) {
                   alignItems: "center",
                   gap: "6px",
                   padding: "7px 12px",
-                  borderRadius: "8px",
                   border: "none",
                   background: isActive ? "rgba(227,30,36,0.15)" : "transparent",
                   color: isActive ? "#E31E24" : "rgba(255,255,255,0.6)",
