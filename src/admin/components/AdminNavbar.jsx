@@ -106,7 +106,7 @@ export default function AdminNavbar({ agent, currentPage, onNavigate }) {
           }}
         >
           <img
-            src={AP_LOGO}
+            src={APLogo}
             alt="Africa Prudential"
             style={{
               height: "28px",

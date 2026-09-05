@@ -1,8 +1,6 @@
 import React from "react";
 import APLogo from "../assets/AP_LOGO.png";
 
-<img src={AP_LOGO} alt="Africa Prudential" />;
-
 export default function Navbar() {
   return (
     <header
@@ -28,7 +26,7 @@ export default function Navbar() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <img
-            src={AP_LOGO}
+            src={APLogo}
             alt="Africa Prudential"
             style={{ height: "36px", width: "auto", objectFit: "contain" }}
           />
