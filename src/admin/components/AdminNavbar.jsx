@@ -107,7 +107,7 @@ export default function AdminNavbar({ agent, currentPage, onNavigate }) {
             src={APLogo}
             alt="Africa Prudential"
             style={{
-              height: "28px",
+              height: "24px",
               width: "auto",
               objectFit: "contain",
               filter: "none",

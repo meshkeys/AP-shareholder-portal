@@ -79,8 +79,9 @@ export default function Login({ onLogin, onForgotPassword }) {
               src={APLogo}
               alt="Africa Prudential"
               style={{
-                height: "40px",
+                height: "24px",
                 width: "auto",
+                objectFit: "contain",
                 filter: "none",
               }}
             />
