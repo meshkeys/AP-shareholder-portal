@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { clearSession } from "../services/adminApi";
 import APLogo from "../../assets/AP_LOGO.png";
 
-<img src={APLogo} alt="Africa Prudential" />;
-
 export default function AdminNavbar({ agent, currentPage, onNavigate }) {
   function handleLogout() {
     clearSession();
