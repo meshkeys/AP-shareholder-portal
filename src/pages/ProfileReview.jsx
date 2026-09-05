@@ -144,18 +144,20 @@ export default function ProfileReview({ profile, onUpdate, onConfirm }) {
           >
             {/* Table header */}
             <thead>
-              <tr style={{ background: "#C0392B" }}>
+              <tr style={{ background: "#E31E24" }}>
                 {TABLE_COLUMNS.map((col) => (
                   <th
                     key={col.key}
                     style={{
                       padding: "12px 14px",
                       textAlign: "left",
-                      fontWeight: "500",
+                      fontWeight: "600",
                       color: "#fff",
                       whiteSpace: "nowrap",
                       fontSize: "12px",
                       letterSpacing: "0.3px",
+                      background: "#E31E24",
+                      borderBottom: "none",
                     }}
                   >
                     {col.label}
