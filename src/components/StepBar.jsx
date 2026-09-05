@@ -1,87 +1,87 @@
 import React from "react";
 
 const STEPS = [
-  "Verify email",
-  "Enter OTP",
-  "Review profile",
-  "Update details",
-  "Done",
+  { num: 1, label: "Verify" },
+  { num: 2, label: "Holdings" },
+  { num: 3, label: "Select" },
+  { num: 4, label: "Details" },
+  { num: 5, label: "Review" },
 ];
 
 export default function StepBar({ currentStep }) {
   return (
     <div
-      style={{ display: "flex", alignItems: "center", marginBottom: "28px" }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: "32px",
+        padding: "0 8px",
+      }}
     >
-      {STEPS.map((label, idx) => {
-        const stepNum = idx + 1;
-        const isDone = stepNum < currentStep;
-        const isActive = stepNum === currentStep;
-
+      {STEPS.map((step, idx) => {
+        const done = currentStep > step.num;
+        const active = currentStep === step.num;
         return (
-          <React.Fragment key={stepNum}>
-            {/* Step circle + label */}
+          <React.Fragment key={step.num}>
             <div
               style={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                flex: 1,
+                gap: "6px",
               }}
             >
               <div
                 style={{
-                  width: "28px",
-                  height: "28px",
+                  width: "36px",
+                  height: "36px",
                   borderRadius: "50%",
+                  border: done || active ? "none" : "2px solid #E5E7EB",
+                  background: done ? "#E31E24" : active ? "#E31E24" : "#FFFFFF",
+                  color: done || active ? "#FFFFFF" : "#9CA3AF",
+                  fontSize: "13px",
+                  fontWeight: "600",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "12px",
-                  fontWeight: "500",
-                  border: isDone
-                    ? "1.5px solid #e8b4af"
-                    : isActive
-                      ? "1.5px solid #C0392B"
-                      : "1.5px solid #d0d0d0",
-                  background: isDone
-                    ? "#fdf1f0"
-                    : isActive
-                      ? "#C0392B"
-                      : "#f8f8f8",
-                  color: isDone ? "#C0392B" : isActive ? "#fff" : "#b0b0b0",
-                  transition: "all 0.2s",
+                  fontFamily: "Inter, sans-serif",
+                  boxShadow: active ? "0 0 0 4px rgba(227,30,36,0.15)" : "none",
+                  transition: "all 0.3s",
+                  zIndex: 1,
+                  position: "relative",
                 }}
               >
-                {isDone ? (
-                  <i className="ti ti-check" style={{ fontSize: "12px" }} />
+                {done ? (
+                  <i className="ti ti-check" style={{ fontSize: "16px" }} />
                 ) : (
-                  stepNum
+                  step.num
                 )}
               </div>
-              <div
+              <span
                 style={{
                   fontSize: "10px",
-                  marginTop: "4px",
-                  textAlign: "center",
-                  color: isActive ? "#C0392B" : "#b0b0b0",
-                  fontWeight: isActive ? "500" : "400",
+                  fontWeight: active ? "600" : "500",
+                  color: active ? "#E31E24" : done ? "#E31E24" : "#9CA3AF",
+                  fontFamily: "Inter, sans-serif",
+                  letterSpacing: "0.02em",
+                  textTransform: "uppercase",
+                  whiteSpace: "nowrap",
                 }}
               >
-                {label}
-              </div>
+                {step.label}
+              </span>
             </div>
-
-            {/* Connector line between steps */}
             {idx < STEPS.length - 1 && (
               <div
                 style={{
                   flex: 1,
-                  height: "1px",
-                  background: stepNum < currentStep ? "#e8b4af" : "#e0e0e0",
+                  height: "2px",
+                  background: done ? "#E31E24" : "#E5E7EB",
                   margin: "0 4px",
-                  marginBottom: "18px",
-                  transition: "background 0.2s",
+                  marginTop: "-18px",
+                  transition: "background 0.3s",
+                  maxWidth: "80px",
                 }}
               />
             )}
