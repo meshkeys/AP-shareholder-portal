@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { login, saveSession } from "../services/adminApi";
-import APLogo from "../assets/AP_LOGO.png";
-
-<img src={APLogo} alt="Africa Prudential" />;
+import APLogo from "../../assets/AP_LOGO.png";
 
 export default function Login({ onLogin, onForgotPassword }) {
   const [email, setEmail] = useState("");
@@ -78,7 +76,7 @@ export default function Login({ onLogin, onForgotPassword }) {
             }}
           >
             <img
-              src={AP_LOGO}
+              src={APLogo}
               alt="Africa Prudential"
               style={{
                 height: "40px",
