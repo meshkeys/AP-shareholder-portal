@@ -110,7 +110,7 @@ export default function AdminNavbar({ agent, currentPage, onNavigate }) {
               height: "28px",
               width: "auto",
               objectFit: "contain",
-              filter: "brightness(0) invert(1)",
+              filter: "none",
             }}
           />
           <div
