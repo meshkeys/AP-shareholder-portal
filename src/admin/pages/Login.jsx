@@ -81,7 +81,7 @@ export default function Login({ onLogin, onForgotPassword }) {
               style={{
                 height: "40px",
                 width: "auto",
-                filter: "brightness(0) invert(1)",
+                filter: "none",
               }}
             />
           </div>
