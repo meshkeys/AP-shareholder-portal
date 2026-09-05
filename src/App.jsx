@@ -14,6 +14,7 @@ import ReviewSummary from "./pages/ReviewSummary";
 import Success from "./pages/Success";
 import KYCStandalone from "./pages/KYCStandalone";
 import AutoAssign from "./admin/pages/AutoAssign";
+import APLogo from "./assets/AP_LOGO.png";
 
 // Admin imports
 import AdminNavbar from "./admin/components/AdminNavbar";
@@ -289,23 +290,317 @@ export default function App() {
 
       <footer
         style={{
-          textAlign: "center",
-          fontSize: "12px",
-          color: "#b0b0b0",
-          padding: "16px 24px",
-          borderTop: "1px solid #e8e8e8",
-          background: "#fff",
+          background: "#FFFFFF",
+          borderTop: "1px solid #E5E7EB",
+          marginTop: "auto",
+          fontFamily: "Inter, sans-serif",
         }}
       >
-        ShareReg Portal &nbsp;·&nbsp; Shareholder Registry Services
-        &nbsp;·&nbsp;
-        <a href="#" style={{ color: "#b0b0b0" }}>
-          Privacy notice
-        </a>
-        &nbsp;·&nbsp;
-        <a href="mailto:support@sharereg.ng" style={{ color: "#b0b0b0" }}>
-          support@sharereg.ng
-        </a>
+        {/* Main footer content */}
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            padding: "48px 24px 32px",
+            display: "grid",
+            gridTemplateColumns: "280px 1fr 1fr 1fr 1fr",
+            gap: "40px",
+          }}
+        >
+          {/* Brand column */}
+          <div>
+            <img
+              src={APLogo}
+              alt="Africa Prudential"
+              style={{
+                height: "32px",
+                width: "auto",
+                marginBottom: "20px",
+                display: "block",
+              }}
+            />
+            <p
+              style={{
+                fontSize: "12px",
+                color: "#6B7280",
+                lineHeight: 1.7,
+                marginBottom: "16px",
+              }}
+            >
+              Africa Prudential Plc is registered with the Securities and
+              Exchange Commission, Nigeria.
+            </p>
+            <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+              {[
+                {
+                  icon: "ti-brand-linkedin",
+                  url: "https://www.linkedin.com/company/africa-prudential-plc/mycompany/",
+                },
+                {
+                  icon: "ti-brand-facebook",
+                  url: "https://www.facebook.com/Africaprudentialplc",
+                },
+                {
+                  icon: "ti-brand-instagram",
+                  url: "https://www.instagram.com/africaprudential",
+                },
+                { icon: "ti-brand-x", url: "https://x.com/afriprud" },
+              ].map((s, idx) => (
+                <a
+                  key={idx}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    borderRadius: "50%",
+                    background: "#374151",
+                    color: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    textDecoration: "none",
+                    transition: "background 0.2s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "#E31E24")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "#374151")
+                  }
+                >
+                  <i className={`ti ${s.icon}`} style={{ fontSize: "15px" }} />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Company */}
+          <div>
+            <p
+              style={{
+                fontSize: "13px",
+                fontWeight: "600",
+                color: "#1A1A2E",
+                marginBottom: "16px",
+                letterSpacing: "0.02em",
+              }}
+            >
+              Company
+            </p>
+            {[
+              {
+                label: "About Us",
+                url: "https://www.africaprudential.com/About-Us",
+              },
+              { label: "Blog", url: "https://www.africaprudential.com/news" },
+              { label: "FAQ", url: "https://www.africaprudential.com/FAQ" },
+              {
+                label: "Contact Us",
+                url: "https://www.africaprudential.com/Contact-Us",
+              },
+              {
+                label: "Sustainability",
+                url: "https://www.africaprudential.com/sustainability",
+              },
+            ].map((link, idx) => (
+              <a
+                key={idx}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "block",
+                  fontSize: "13px",
+                  color: "#6B7280",
+                  textDecoration: "none",
+                  marginBottom: "10px",
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#E31E24")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#6B7280")}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+
+          {/* Our Service */}
+          <div>
+            <p
+              style={{
+                fontSize: "13px",
+                fontWeight: "600",
+                color: "#1A1A2E",
+                marginBottom: "16px",
+                letterSpacing: "0.02em",
+              }}
+            >
+              Our Service
+            </p>
+            {[
+              {
+                label: "Premium Share Registration",
+                url: "https://www.africaprudential.com/Services/Premium-share-Registration",
+              },
+              {
+                label: "Capital Market Issuer",
+                url: "https://www.africaprudential.com/Services/Capital-Market-Issuer-Services",
+              },
+              {
+                label: "Probate and Transmission",
+                url: "https://www.africaprudential.com/Services/Probate-and-Transmission-Services",
+              },
+              {
+                label: "Investor Relations",
+                url: "https://www.africaprudential.com/Services/Investor-Relations-Services",
+              },
+              {
+                label: "e-Solutions",
+                url: "https://www.africaprudential.com/Services/e-Solutions",
+              },
+            ].map((link, idx) => (
+              <a
+                key={idx}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "block",
+                  fontSize: "13px",
+                  color: "#6B7280",
+                  textDecoration: "none",
+                  marginBottom: "10px",
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#E31E24")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#6B7280")}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+
+          {/* Legal */}
+          <div>
+            <p
+              style={{
+                fontSize: "13px",
+                fontWeight: "600",
+                color: "#1A1A2E",
+                marginBottom: "16px",
+                letterSpacing: "0.02em",
+              }}
+            >
+              Legal
+            </p>
+            {[
+              {
+                label: "Privacy Policy",
+                url: "https://www.africaprudential.com/Privacy-Policy",
+              },
+              {
+                label: "Glossary",
+                url: "https://www.africaprudential.com/Glassory",
+              },
+              {
+                label: "Cookie Policy",
+                url: "https://www.africaprudential.com/policies/cookie-policy",
+              },
+            ].map((link, idx) => (
+              <a
+                key={idx}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "block",
+                  fontSize: "13px",
+                  color: "#6B7280",
+                  textDecoration: "none",
+                  marginBottom: "10px",
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#E31E24")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#6B7280")}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+
+          {/* Investor Relations */}
+          <div>
+            <p
+              style={{
+                fontSize: "13px",
+                fontWeight: "600",
+                color: "#1A1A2E",
+                marginBottom: "16px",
+                letterSpacing: "0.02em",
+              }}
+            >
+              Investor Relations
+            </p>
+            {[
+              {
+                label: "Financial Reports",
+                url: "https://www.africaprudential.com/investor-relations",
+              },
+              {
+                label: "Company Policy",
+                url: "https://www.africaprudential.com/investor-relations",
+              },
+              {
+                label: "Client Information",
+                url: "https://www.africaprudential.com/investor-relations",
+              },
+            ].map((link, idx) => (
+              <a
+                key={idx}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "block",
+                  fontSize: "13px",
+                  color: "#6B7280",
+                  textDecoration: "none",
+                  marginBottom: "10px",
+                  transition: "color 0.2s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#E31E24")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#6B7280")}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div style={{ borderTop: "1px solid #E5E7EB", padding: "16px 24px" }}>
+          <div
+            style={{
+              maxWidth: "1200px",
+              margin: "0 auto",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "12px",
+            }}
+          >
+            <p style={{ fontSize: "12px", color: "#9CA3AF" }}>
+              © 2026 Africa Prudential. All rights reserved.
+            </p>
+            <p style={{ fontSize: "12px", color: "#9CA3AF" }}>
+              Africa Prudential Plc is registered with the Securities and
+              Exchange Commission, Nigeria.
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );
