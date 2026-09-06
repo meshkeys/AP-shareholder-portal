@@ -2,7 +2,13 @@ import React, { useState } from "react";
 import { clearSession } from "../services/adminApi";
 import APLogo from "../../assets/AP_LOGO.png";
 
-export default function AdminNavbar({ agent, currentPage, onNavigate }) {
+export default function AdminNavbar({
+  agent,
+  currentPage,
+  onNavigate,
+  isDark,
+  toggleTheme,
+}) {
   function handleLogout() {
     clearSession();
     window.location.href = "/admin";
@@ -220,6 +226,36 @@ export default function AdminNavbar({ agent, currentPage, onNavigate }) {
               {roleLabels[agent?.role] || agent?.role}
             </p>
           </div>
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "36px",
+              height: "36px",
+              borderRadius: "8px",
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "rgba(255,255,255,0.05)",
+              color: isDark ? "#FCD34D" : "rgba(255,255,255,0.6)",
+              cursor: "pointer",
+              transition: "all 0.2s",
+              flexShrink: 0,
+            }}
+            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.background = "rgba(255,255,255,0.05)")
+            }
+          >
+            <i
+              className={`ti ${isDark ? "ti-sun" : "ti-moon"}`}
+              style={{ fontSize: "16px" }}
+            />
+          </button>
           <button
             onClick={handleLogout}
             style={{

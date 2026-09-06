@@ -113,7 +113,7 @@ export default function Reports({ agent }) {
     fontSize: "13px",
     border: "1px solid #e0e0e0",
     borderRadius: "8px",
-    background: "#fff",
+    background: "var(--admin-card)",
     color: "#1a1a1a",
     outline: "none",
   };
@@ -179,8 +179,8 @@ export default function Reports({ agent }) {
     return (
       <div
         style={{
-          background: "#fff",
-          border: "1px solid #e8e8e8",
+          background: "var(--admin-card)",
+          border: "1px solid var(--admin-card-border)",
           borderRadius: "10px",
           padding: "16px",
           boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
@@ -274,8 +274,8 @@ export default function Reports({ agent }) {
                   position: "absolute",
                   right: 0,
                   top: "44px",
-                  background: "#fff",
-                  border: "1px solid #e8e8e8",
+                  background: "var(--admin-card)",
+                  border: "1px solid var(--admin-card-border)",
                   borderRadius: "8px",
                   boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                   zIndex: 100,
@@ -387,8 +387,8 @@ export default function Reports({ agent }) {
       {/* Filters */}
       <div
         style={{
-          background: "#fff",
-          border: "1px solid #e8e8e8",
+          background: "var(--admin-card)",
+          border: "1px solid var(--admin-card-border)",
           borderRadius: "12px",
           padding: "16px",
           marginBottom: "20px",
@@ -613,8 +613,8 @@ export default function Reports({ agent }) {
           >
             <div
               style={{
-                background: "#fff",
-                border: "1px solid #e8e8e8",
+                background: "var(--admin-card)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "12px",
                 padding: "20px",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -672,8 +672,8 @@ export default function Reports({ agent }) {
             </div>
             <div
               style={{
-                background: "#fff",
-                border: "1px solid #e8e8e8",
+                background: "var(--admin-card)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "12px",
                 padding: "20px",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -718,8 +718,8 @@ export default function Reports({ agent }) {
             {/* By type */}
             <div
               style={{
-                background: "#fff",
-                border: "1px solid #e8e8e8",
+                background: "var(--admin-card)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "12px",
                 padding: "20px",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -749,8 +749,8 @@ export default function Reports({ agent }) {
             {/* By agent */}
             <div
               style={{
-                background: "#fff",
-                border: "1px solid #e8e8e8",
+                background: "var(--admin-card)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "12px",
                 padding: "20px",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -853,8 +853,8 @@ export default function Reports({ agent }) {
           {/* By day */}
           <div
             style={{
-              background: "#fff",
-              border: "1px solid #e8e8e8",
+              background: "var(--admin-card)",
+              border: "1px solid var(--admin-card-border)",
               borderRadius: "12px",
               padding: "20px",
               boxShadow: "0 1px 4px rgba(0,0,0,0.06)",

@@ -43,7 +43,7 @@ export default function ResetPassword({ token, onDone }) {
     fontSize: "14px",
     border: "1px solid #e0e0e0",
     borderRadius: "8px",
-    background: "#fff",
+    background: "var(--admin-card)",
     color: "#1a1a1a",
     outline: "none",
     paddingRight: "40px",

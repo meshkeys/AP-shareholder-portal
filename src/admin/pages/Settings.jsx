@@ -263,9 +263,9 @@ export default function Settings({ agent }) {
     width: "100%",
     padding: "9px 12px",
     fontSize: "14px",
-    border: "1px solid #e0e0e0",
+    border: "1px solid var(--admin-card-border)",
     borderRadius: "8px",
-    background: "#fff",
+    background: "var(--admin-card)",
     color: "#1a1a1a",
     outline: "none",
   };
@@ -349,8 +349,8 @@ export default function Settings({ agent }) {
       {isAdmin && settings && (
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #e8e8e8",
+            background: "var(--admin-card)",
+            border: "1px solid var(--admin-card-border)",
             borderRadius: "12px",
             padding: "20px",
             marginBottom: "20px",
@@ -445,7 +445,7 @@ export default function Settings({ agent }) {
                       width: "16px",
                       height: "16px",
                       borderRadius: "50%",
-                      background: "#fff",
+                      background: "var(--admin-card)",
                       position: "absolute",
                       top: "3px",
                       left: settings.email_notifications ? "21px" : "3px",
@@ -594,8 +594,8 @@ export default function Settings({ agent }) {
       {canManageEscalations && (
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #e8e8e8",
+            background: "var(--admin-card)",
+            border: "1px solid var(--admin-card-border)",
             borderRadius: "12px",
             padding: "20px",
             boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -669,7 +669,7 @@ export default function Settings({ agent }) {
             <div
               style={{
                 background: "#fafafa",
-                border: "1px solid #e8e8e8",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "8px",
                 padding: "16px",
                 marginBottom: "16px",
@@ -958,7 +958,7 @@ export default function Settings({ agent }) {
               <div
                 key={rule.id}
                 style={{
-                  border: "1px solid #e8e8e8",
+                  border: "1px solid var(--admin-card-border)",
                   borderRadius: "8px",
                   padding: "14px",
                   marginBottom: idx < rules.length - 1 ? "10px" : 0,
@@ -1053,7 +1053,7 @@ export default function Settings({ agent }) {
                         fontSize: "12px",
                         padding: "5px 10px",
                         borderRadius: "6px",
-                        border: "1px solid #e8e8e8",
+                        border: "1px solid var(--admin-card-border)",
                         background: "#fafafa",
                         color: "#6b6b6b",
                         cursor: "pointer",
@@ -1067,7 +1067,7 @@ export default function Settings({ agent }) {
                         fontSize: "12px",
                         padding: "5px 10px",
                         borderRadius: "6px",
-                        border: "1px solid #c0d0f5",
+                        border: "1px solid var(--admin-card-border)",
                         background: "#f0f4ff",
                         color: "#2255cc",
                         cursor: "pointer",
@@ -1103,8 +1103,8 @@ export default function Settings({ agent }) {
       {canManageEscalations && (
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #e8e8e8",
+            background: "var(--admin-card)",
+            border: "1px solid var(--admin-card-border)",
             borderRadius: "12px",
             padding: "20px",
             boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -1164,7 +1164,7 @@ export default function Settings({ agent }) {
             <div
               style={{
                 background: "#fafafa",
-                border: "1px solid #e8e8e8",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "8px",
                 padding: "16px",
                 marginBottom: "16px",
@@ -1430,11 +1430,11 @@ export default function Settings({ agent }) {
                   <div
                     key={r.id}
                     style={{
-                      border: "1px solid #e8e8e8",
+                      border: "1px solid var(--admin-card-border)",
                       borderRadius: "8px",
                       padding: "12px 14px",
                       marginBottom: "8px",
-                      background: "#fff",
+                      background: "var(--admin-card)",
                     }}
                   >
                     <div

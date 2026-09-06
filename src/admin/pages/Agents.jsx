@@ -141,7 +141,7 @@ export default function Agents({ agent }) {
     fontSize: "14px",
     border: "1px solid #e0e0e0",
     borderRadius: "8px",
-    background: "#fff",
+    background: "var(--admin-card)",
     color: "#1a1a1a",
     outline: "none",
   };
@@ -229,8 +229,8 @@ export default function Agents({ agent }) {
       {showForm && (
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #e8e8e8",
+            background: "var(--admin-card)",
+            border: "1px solid var(--admin-card-border)",
             borderRadius: "12px",
             padding: "20px",
             marginBottom: "20px",
@@ -390,7 +390,7 @@ export default function Agents({ agent }) {
         >
           <div
             style={{
-              background: "#fff",
+              background: "var(--admin-card)",
               borderRadius: "12px",
               padding: "24px",
               width: "400px",
@@ -456,8 +456,8 @@ export default function Agents({ agent }) {
       {/* Agents table */}
       <div
         style={{
-          background: "#fff",
-          border: "1px solid #e8e8e8",
+          background: "var(--admin-card)",
+          border: "1px solid var(--admin-card-border)",
           borderRadius: "12px",
           overflow: "hidden",
           boxShadow: "0 1px 4px rgba(0,0,0,0.06)",

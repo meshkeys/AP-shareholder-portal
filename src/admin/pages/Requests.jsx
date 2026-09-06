@@ -151,7 +151,7 @@ export default function Requests({ agent, onNavigate }) {
     fontSize: "13px",
     border: "1px solid #e0e0e0",
     borderRadius: "8px",
-    background: "#fff",
+    background: "var(--admin-card)",
     color: "#1a1a1a",
     outline: "none",
   };
@@ -199,8 +199,8 @@ export default function Requests({ agent, onNavigate }) {
                 position: "absolute",
                 right: 0,
                 top: "40px",
-                background: "#fff",
-                border: "1px solid #e8e8e8",
+                background: "var(--admin-card)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "8px",
                 boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                 zIndex: 10,
@@ -535,8 +535,8 @@ export default function Requests({ agent, onNavigate }) {
       {/* Table */}
       <div
         style={{
-          background: "#fff",
-          border: "1px solid #e8e8e8",
+          background: "var(--admin-card)",
+          border: "1px solid var(--admin-card-border)",
           borderRadius: "12px",
           overflow: "hidden",
           boxShadow: "0 1px 4px rgba(0,0,0,0.06)",

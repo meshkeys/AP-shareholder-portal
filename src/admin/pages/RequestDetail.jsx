@@ -219,7 +219,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
     fontSize: "14px",
     border: "1px solid #e0e0e0",
     borderRadius: "8px",
-    background: "#fff",
+    background: "var(--admin-card)",
     color: "#1a1a1a",
     outline: "none",
   };
@@ -306,8 +306,8 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           {/* Request header */}
           <div
             style={{
-              background: "#fff",
-              border: "1px solid #e8e8e8",
+              background: "var(--admin-card)",
+              border: "1px solid var(--admin-card-border)",
               borderRadius: "12px",
               padding: "20px",
               boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -390,7 +390,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           {/* Ticket timeline */}
           <div
             style={{
-              background: "#fff",
+              background: "var(--admin-card)",
               border: "1px solid #e8e8e8",
               borderRadius: "12px",
               padding: "20px",
@@ -525,7 +525,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           {request.fields && Object.keys(request.fields).length > 0 && (
             <div
               style={{
-                background: "#fff",
+                background: "var(--admin-card)",
                 border: "1px solid #e8e8e8",
                 borderRadius: "12px",
                 padding: "20px",
@@ -560,7 +560,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           {/* Documents */}
           <div
             style={{
-              background: "#fff",
+              background: "var(--admin-card)",
               border: "1px solid #e8e8e8",
               borderRadius: "12px",
               padding: "20px",
@@ -643,7 +643,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           {/* Activity & Notes */}
           <div
             style={{
-              background: "#fff",
+              background: "var(--admin-card)",
               border: "1px solid #e8e8e8",
               borderRadius: "12px",
               padding: "20px",
@@ -853,7 +853,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           {["admin", "supervisor", "lead_supervisor"].includes(agent.role) && (
             <div
               style={{
-                background: "#fff",
+                background: "var(--admin-card)",
                 border: "1px solid #e8e8e8",
                 borderRadius: "12px",
                 padding: "16px",
@@ -915,7 +915,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           {availableStatuses.length > 0 && (
             <div
               style={{
-                background: "#fff",
+                background: "var(--admin-card)",
                 border: "1px solid #e8e8e8",
                 borderRadius: "12px",
                 padding: "16px",
@@ -1203,7 +1203,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           {request.status === "open" && (
             <div
               style={{
-                background: "#fff",
+                background: "var(--admin-card)",
                 border: "1px solid #a8dfc0",
                 borderRadius: "12px",
                 padding: "16px",
@@ -1258,7 +1258,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           {request.status === "completed" && (
             <div
               style={{
-                background: "#fff",
+                background: "var(--admin-card)",
                 border: "1px solid #e8e8e8",
                 borderRadius: "12px",
                 padding: "16px",
@@ -1333,7 +1333,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           {/* Email notifications toggle */}
           <div
             style={{
-              background: "#fff",
+              background: "var(--admin-card)",
               border: "1px solid #e8e8e8",
               borderRadius: "12px",
               padding: "16px",
@@ -1396,7 +1396,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                     width: "14px",
                     height: "14px",
                     borderRadius: "50%",
-                    background: "#fff",
+                    background: "var(--admin-card)",
                     position: "absolute",
                     top: "3px",
                     left: request.email_toggle ? "19px" : "3px",

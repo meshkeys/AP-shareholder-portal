@@ -133,8 +133,8 @@ export default function Dashboard({ agent, onNavigate }) {
         {/* Recent requests */}
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #e8e8e8",
+            background: "var(--admin-card)",
+            border: "1px solid var(--admin-card-border)",
             borderRadius: "12px",
             overflow: "hidden",
             boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -233,8 +233,8 @@ export default function Dashboard({ agent, onNavigate }) {
         {stats && (
           <div
             style={{
-              background: "#fff",
-              border: "1px solid #e8e8e8",
+              background: "var(--admin-card)",
+              border: "1px solid var(--admin-card-border)",
               borderRadius: "12px",
               overflow: "hidden",
               boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -282,8 +282,8 @@ export default function Dashboard({ agent, onNavigate }) {
       {["admin", "supervisor"].includes(agent.role) && workload.length > 0 && (
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #e8e8e8",
+            background: "var(--admin-card)",
+            border: "1px solid var(--admin-card-border)",
             borderRadius: "12px",
             overflow: "hidden",
             boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -445,8 +445,8 @@ function LoadingState() {
           <div
             key={i}
             style={{
-              background: "#fff",
-              border: "1px solid #e8e8e8",
+              background: "var(--admin-card)",
+              border: "1px solid var(--admin-card-border)",
               borderRadius: "12px",
               padding: "20px",
               height: "90px",

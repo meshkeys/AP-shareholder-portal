@@ -30,11 +30,13 @@ import ChangePassword from "./admin/pages/ChangePassword";
 import ForgotPassword from "./admin/pages/ForgotPassword";
 import ResetPassword from "./admin/pages/ResetPassword";
 import { getSession } from "./admin/services/adminApi";
+import { useTheme } from "./admin/hooks/useTheme";
 
 const isAdminRoute = window.location.pathname.startsWith("/admin");
 const isKYCRoute = window.location.pathname.startsWith("/kyc-update");
 
 export default function App() {
+  const { isDark, toggleTheme } = useTheme();
   // ── Admin state ─────────────────────────────────────────────────────────────
   const [adminAgent, setAdminAgent] = useState(null);
   const [adminPage, setAdminPage] = useState("dashboard");
@@ -188,17 +190,21 @@ export default function App() {
     // Main admin dashboard
     return (
       <div
+        data-admin-theme={isDark ? "dark" : "light"}
         style={{
           minHeight: "100vh",
-          background: "#f5f5f5",
+          background: "var(--admin-bg)",
           display: "flex",
           flexDirection: "column",
+          transition: "background 0.3s ease",
         }}
       >
         <AdminNavbar
           agent={adminAgent}
           currentPage={adminPage}
           onNavigate={handleAdminNavigate}
+          isDark={isDark}
+          toggleTheme={toggleTheme}
         />
         <div style={{ flex: 1 }}>
           {adminPage === "dashboard" && (

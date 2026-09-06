@@ -162,7 +162,7 @@ export default function AutoAssign({ agent }) {
     fontSize: "13px",
     border: "1px solid #e0e0e0",
     borderRadius: "8px",
-    background: "#fff",
+    background: "var(--admin-card)",
     color: "#1a1a1a",
     outline: "none",
   };
@@ -285,8 +285,8 @@ export default function AutoAssign({ agent }) {
       {settings && (
         <div
           style={{
-            background: "#fff",
-            border: "1px solid #e8e8e8",
+            background: "var(--admin-card)",
+            border: "1px solid var(--admin-card-border)",
             borderRadius: "12px",
             padding: "20px",
             marginBottom: "20px",
@@ -369,7 +369,7 @@ export default function AutoAssign({ agent }) {
                     width: "16px",
                     height: "16px",
                     borderRadius: "50%",
-                    background: "#fff",
+                    background: "var(--admin-card)",
                     position: "absolute",
                     top: "3px",
                     left: settings.is_active ? "21px" : "3px",
@@ -548,9 +548,9 @@ export default function AutoAssign({ agent }) {
               textAlign: "center",
               padding: "40px",
               color: "#6b6b6b",
-              background: "#fff",
+              background: "var(--admin-card)",
               borderRadius: "12px",
-              border: "1px solid #e8e8e8",
+              border: "1px solid var(--admin-card-border)",
             }}
           >
             <i
@@ -572,7 +572,7 @@ export default function AutoAssign({ agent }) {
               <div
                 key={a.id}
                 style={{
-                  background: "#fff",
+                  background: "var(--admin-card)",
                   border: `1px solid ${a.autoAssign.isEnabled ? "#a8dfc0" : "#e8e8e8"}`,
                   borderRadius: "12px",
                   overflow: "hidden",
@@ -674,7 +674,7 @@ export default function AutoAssign({ agent }) {
                           width: "16px",
                           height: "16px",
                           borderRadius: "50%",
-                          background: "#fff",
+                          background: "var(--admin-card)",
                           position: "absolute",
                           top: "3px",
                           left: a.autoAssign.isEnabled ? "21px" : "3px",

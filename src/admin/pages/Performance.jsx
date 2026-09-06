@@ -331,7 +331,7 @@ export default function Performance({ agent, onNavigate }) {
                   fontSize: "13px",
                   border: "1px solid #e0e0e0",
                   borderRadius: "6px",
-                  background: "#fff",
+                  background: "var(--admin-card)",
                   color: "#1a1a1a",
                   outline: "none",
                   cursor: "pointer",
@@ -360,7 +360,7 @@ export default function Performance({ agent, onNavigate }) {
                   fontSize: "13px",
                   border: "1px solid #e0e0e0",
                   borderRadius: "6px",
-                  background: "#fff",
+                  background: "var(--admin-card)",
                   color: "#1a1a1a",
                   outline: "none",
                   cursor: "pointer",
@@ -433,8 +433,8 @@ export default function Performance({ agent, onNavigate }) {
           >
             <div
               style={{
-                background: "#fff",
-                border: "1px solid #e8e8e8",
+                background: "var(--admin-card)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "12px",
                 padding: "24px",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -581,8 +581,8 @@ export default function Performance({ agent, onNavigate }) {
                 <div
                   key={stat.label}
                   style={{
-                    background: "#fff",
-                    border: "1px solid #e8e8e8",
+                    background: "var(--admin-card)",
+                    border: "1px solid var(--admin-card-border)",
                     borderRadius: "10px",
                     padding: "14px",
                     boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
@@ -623,8 +623,8 @@ export default function Performance({ agent, onNavigate }) {
             {/* Metric bars */}
             <div
               style={{
-                background: "#fff",
-                border: "1px solid #e8e8e8",
+                background: "var(--admin-card)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "12px",
                 padding: "20px",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -682,8 +682,8 @@ export default function Performance({ agent, onNavigate }) {
             {/* Open tickets with SLA */}
             <div
               style={{
-                background: "#fff",
-                border: "1px solid #e8e8e8",
+                background: "var(--admin-card)",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "12px",
                 overflow: "hidden",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -829,8 +829,8 @@ export default function Performance({ agent, onNavigate }) {
         <div>
           <div
             style={{
-              background: "#fff",
-              border: "1px solid #e8e8e8",
+              background: "var(--admin-card)",
+              border: "1px solid var(--admin-card-border)",
               borderRadius: "12px",
               overflow: "hidden",
               boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -1006,7 +1006,7 @@ export default function Performance({ agent, onNavigate }) {
                           color: "#6b6b6b",
                         }}
                       >
-                        No agent performance data for this period yet.
+                        No agent performance data for this date range yet.
                       </td>
                     </tr>
                   )}
