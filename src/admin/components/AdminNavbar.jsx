@@ -229,6 +229,7 @@ export default function AdminNavbar({
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
+            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
             style={{
               display: "flex",
               alignItems: "center",
@@ -236,25 +237,18 @@ export default function AdminNavbar({
               width: "36px",
               height: "36px",
               borderRadius: "8px",
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "rgba(255,255,255,0.05)",
-              color: isDark ? "#FCD34D" : "rgba(255,255,255,0.6)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              background: isDark
+                ? "rgba(252,211,77,0.15)"
+                : "rgba(255,255,255,0.08)",
+              color: isDark ? "#FCD34D" : "#FFFFFF",
               cursor: "pointer",
               transition: "all 0.2s",
               flexShrink: 0,
+              fontSize: "17px",
             }}
-            title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = "rgba(255,255,255,0.05)")
-            }
           >
-            <i
-              className={`ti ${isDark ? "ti-sun" : "ti-moon"}`}
-              style={{ fontSize: "16px" }}
-            />
+            {isDark ? "☀️" : "🌙"}
           </button>
           <button
             onClick={handleLogout}
