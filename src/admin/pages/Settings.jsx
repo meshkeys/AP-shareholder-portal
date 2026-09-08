@@ -409,9 +409,9 @@ export default function Settings({ agent }) {
                   padding: "12px 14px",
                   background: settings.email_notifications
                     ? "#f0faf4"
-                    : "#fafafa",
+                    : "#f5f5f5",
                   borderRadius: "8px",
-                  border: `1px solid ${settings.email_notifications ? "#a8dfc0" : "#e8e8e8"}`,
+                  border: `1px solid ${settings.email_notifications ? "#a8dfc0" : "#d0d0d0"}`,
                   width: "fit-content",
                   gap: "12px",
                 }}
@@ -419,7 +419,7 @@ export default function Settings({ agent }) {
                 <p
                   style={{
                     fontSize: "13px",
-                    color: settings.email_notifications ? "#1a7a40" : "#6b6b6b",
+                    color: settings.email_notifications ? "#1a7a40" : "#374151",
                     fontWeight: "500",
                   }}
                 >
