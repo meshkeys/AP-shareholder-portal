@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import StepBar from "./components/StepBar";
-import EmailEntry, { ProductCarousel } from "./pages/EmailEntry";
+import EmailEntry from "./pages/EmailEntry";
 import OTPVerify from "./pages/OTPVerify";
 import ProfileReview from "./pages/ProfileReview";
 import UpdateTypeSelector from "./pages/UpdateTypeSelector";
+import { UPDATE_CATEGORIES } from "./config/updateCategories";
 import NameChangeForm from "./pages/NameChangeForm";
 import KYCForm from "./pages/KYCForm";
 import AddressForm from "./pages/AddressForm";
@@ -52,6 +53,15 @@ export default function App() {
   const [submission, setSubmission] = useState(null);
   const [ticket, setTicket] = useState(null);
 
+  // Preset update type — set when arriving via a request-type link from the
+  // main website's self-service landing page, e.g. "?type=kycUpdate".
+  // When present, the profile page's update button jumps straight to that
+  // form instead of showing the generic type selector.
+  const [presetUpdateType] = useState(() => {
+    const typeParam = new URLSearchParams(window.location.search).get("type");
+    return UPDATE_CATEGORIES.find((c) => c.id === typeParam) || null;
+  });
+
   // ── Check for existing admin session on load ──────────────────────────────
   useEffect(() => {
     if (isAdminRoute) {
@@ -79,7 +89,12 @@ export default function App() {
   }
 
   function onUpdateRequested() {
-    setStep(4);
+    if (presetUpdateType) {
+      setUpdateType(presetUpdateType);
+      setStep(5);
+    } else {
+      setStep(4);
+    }
   }
 
   function onConfirmed({ referenceNumber, type }) {
@@ -125,7 +140,13 @@ export default function App() {
 
   function renderForm() {
     if (!updateType) return null;
-    const props = { profile, onNext: onFormDone, onBack: () => setStep(4) };
+    // Skip back to the profile page (not the type selector) when the type
+    // was preset via the URL, since the selector was never shown.
+    const props = {
+      profile,
+      onNext: onFormDone,
+      onBack: () => setStep(presetUpdateType ? 3 : 4),
+    };
     switch (updateType.id) {
       case "nameChange":
         return <NameChangeForm {...props} />;
@@ -136,7 +157,7 @@ export default function App() {
       case "signatureUpdate":
         return <SignatureForm {...props} />;
       case "nubanChange":
-        return <NUBANChange onBack={() => setStep(4)} />;
+        return <NUBANChange onBack={props.onBack} />;
       default:
         return null;
     }
@@ -250,8 +271,6 @@ export default function App() {
           transition: "max-width 0.3s ease",
         }}
       >
-        {step === 1 && <ProductCarousel />}
-
         <StepBar currentStep={step > 5 ? 5 : step} />
 
         {step === 1 && <EmailEntry onNext={onEmailDone} />}
@@ -268,6 +287,7 @@ export default function App() {
             profile={profile}
             onUpdate={onUpdateRequested}
             onConfirm={onConfirmed}
+            presetUpdateType={presetUpdateType}
           />
         )}
         {step === 4 && (

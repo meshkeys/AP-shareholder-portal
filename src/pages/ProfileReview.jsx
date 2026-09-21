@@ -50,9 +50,20 @@ const mockHoldings = [
   },
 ];
 
-export default function ProfileReview({ profile, onUpdate, onConfirm }) {
+export default function ProfileReview({
+  profile,
+  onUpdate,
+  onConfirm,
+  presetUpdateType,
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // e.g. "KYC update" → "KYC", "Name change" → "Name"
+  const presetShortLabel = presetUpdateType?.label.replace(
+    / (change|update)$/i,
+    "",
+  );
 
   async function handleConfirm() {
     setLoading(true);
@@ -118,8 +129,9 @@ export default function ProfileReview({ profile, onUpdate, onConfirm }) {
           className="ti ti-info-circle"
           style={{ fontSize: "15px", flexShrink: 0, marginTop: "1px" }}
         />
-        Review your shareholding records below. If any information is incorrect
-        or outdated, click "Update my details".
+        {presetUpdateType
+          ? `Review your shareholding records below. If any information is incorrect or outdated, click "Update ${presetShortLabel}".`
+          : `Review your shareholding records below. If any information is incorrect or outdated, click "Update my details".`}
       </div>
 
       {/* Holdings table */}
@@ -238,8 +250,8 @@ export default function ProfileReview({ profile, onUpdate, onConfirm }) {
           onClick={onUpdate}
           disabled={loading}
         >
-          <i className="ti ti-edit" style={{ fontSize: "15px" }} /> Update my
-          details
+          <i className="ti ti-edit" style={{ fontSize: "15px" }} />{" "}
+          {presetUpdateType ? `Update ${presetShortLabel}` : "Update my details"}
         </button>
       </div>
     </div>
