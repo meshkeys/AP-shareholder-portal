@@ -59,7 +59,17 @@ app.use("/api/uploads", uploadRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", message: "ShareReg API is running." });
+  res.json({
+    status: "ok",
+    message: "Africa Prudential ShareReg API is running.",
+    timestamp: new Date().toISOString(),
+    uptime: Math.floor(process.uptime()) + " seconds",
+  });
+});
+
+// Keep-alive ping endpoint
+app.get("/api/ping", (req, res) => {
+  res.json({ pong: true, time: new Date().toISOString() });
 });
 
 // ── Global error handler ──────────────────────────────────────────────────────
