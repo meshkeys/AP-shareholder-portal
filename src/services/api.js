@@ -34,7 +34,7 @@ export async function checkEmailExists(email) {
     "nawokgotau@gmail.com",
     "cynthia.mmonu@africaprudential.com",
     "segun.adebayo@africaprudential.com",
-    "Michael.Ezeagwula@Africaprudential.com",
+    "michael.ezeagwula@africaprudential.com",
   ];
   return { exists: registeredEmails.includes(email) };
 }
