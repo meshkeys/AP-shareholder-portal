@@ -8,6 +8,8 @@ import {
   addNote,
   toggleEmailNotification,
   getCannedResponses,
+  saveRegistrarCertificates,
+  sendToBroker,
 } from "../services/adminApi";
 
 const STATUS_ACTIONS = {
@@ -65,6 +67,13 @@ export default function RequestDetail({ agent, requestId, onBack }) {
   // Close ticket
   const [closeNote, setCloseNote] = useState("");
   const [closing, setClosing] = useState(false);
+
+  // Dematerialization — registrar certificate fill-in
+  const [registrarCertificates, setRegistrarCertificates] = useState([
+    { certificateNo: "", units: "" },
+  ]);
+  const [savingRegistrarInfo, setSavingRegistrarInfo] = useState(false);
+  const [sendingToBroker, setSendingToBroker] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -182,6 +191,58 @@ export default function RequestDetail({ agent, requestId, onBack }) {
       setError(err.message);
     } finally {
       setClosing(false);
+    }
+  }
+
+  function handleRegistrarCertChange(idx, key, value) {
+    setRegistrarCertificates((prev) =>
+      prev.map((c, i) => (i === idx ? { ...c, [key]: value } : c)),
+    );
+  }
+
+  function addRegistrarCertRow() {
+    setRegistrarCertificates((prev) => [
+      ...prev,
+      { certificateNo: "", units: "" },
+    ]);
+  }
+
+  function removeRegistrarCertRow(idx) {
+    setRegistrarCertificates((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  async function handleSaveRegistrarInfo() {
+    const incomplete = registrarCertificates.some(
+      (c) => !c.certificateNo.trim() || !c.units.trim(),
+    );
+    if (incomplete) {
+      setError("Please fill in every certificate number and unit count.");
+      return;
+    }
+    setSavingRegistrarInfo(true);
+    setError("");
+    try {
+      await saveRegistrarCertificates(requestId, registrarCertificates);
+      setSuccessMsg("Certificate details saved and sent to broker.");
+      loadData();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingRegistrarInfo(false);
+    }
+  }
+
+  async function handleSendToBroker() {
+    setSendingToBroker(true);
+    setError("");
+    try {
+      await sendToBroker(requestId);
+      setSuccessMsg("Request sent to broker.");
+      loadData();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSendingToBroker(false);
     }
   }
 
@@ -391,7 +452,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           <div
             style={{
               background: "var(--admin-card)",
-              border: "1px solid #e8e8e8",
+              border: "1px solid var(--admin-card-border)",
               borderRadius: "12px",
               padding: "20px",
               boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -521,12 +582,172 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             </div>
           </div>
 
+          {/* Dematerialization — broker & certificate status */}
+          {request.request_type === "dematerialization" && (
+            <div
+              style={{
+                background: "var(--admin-card)",
+                border: "1px solid var(--admin-card-border)",
+                borderRadius: "12px",
+                padding: "20px",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+              }}
+            >
+              <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "14px" }}>
+                Dematerialization — broker &amp; certificates
+              </h3>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "16px" }}>
+                <InfoItem label="Broker" value={request.fields?.brokerName || "—"} />
+                <InfoItem label="Broker email" value={request.fields?.brokerEmail || "Not on file"} />
+                <InfoItem
+                  label="Sent to broker"
+                  value={
+                    request.fields?.brokerSentAt
+                      ? new Date(request.fields.brokerSentAt).toLocaleString("en-GB")
+                      : "Not yet sent"
+                  }
+                />
+                <InfoItem
+                  label="Returned by broker"
+                  value={
+                    request.fields?.brokerReturnedAt
+                      ? new Date(request.fields.brokerReturnedAt).toLocaleString("en-GB")
+                      : "Awaiting broker"
+                  }
+                />
+              </div>
+
+              {/* Certificates already provided */}
+              {request.fields?.certificates?.length > 0 ? (
+                <div style={{ marginBottom: request.fields?.brokerSentAt ? 0 : "16px" }}>
+                  <p style={{ fontSize: "12px", fontWeight: "500", color: "#6b6b6b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
+                    Certificate details
+                    {request.fields.certificatesProvidedBy === "registrar" && " (added by registrar)"}
+                  </p>
+                  <table style={{ width: "100%", fontSize: "13px", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ textAlign: "left", color: "#6b6b6b" }}>
+                        <th style={{ padding: "6px 0" }}>Certificate No.</th>
+                        <th style={{ padding: "6px 0" }}>Units</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {request.fields.certificates.map((c, idx) => (
+                        <tr key={idx} style={{ borderTop: "1px solid #f0f0f0" }}>
+                          <td style={{ padding: "6px 0" }}>{c.certificateNo}</td>
+                          <td style={{ padding: "6px 0" }}>{c.units}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    background: "#fff8e6",
+                    border: "1px solid #f5d78e",
+                    borderRadius: "8px",
+                    padding: "14px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <p style={{ fontSize: "13px", color: "#b36a00", marginBottom: "12px" }}>
+                    Shareholder did not have their certificate number(s)/units. Look these up and
+                    add them below — this will also send the request to the broker.
+                  </p>
+                  {registrarCertificates.map((cert, idx) => (
+                    <div key={idx} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-end" }}>
+                      <div className="field-group" style={{ flex: 1, marginBottom: 0 }}>
+                        <label>Certificate no.</label>
+                        <input
+                          type="text"
+                          value={cert.certificateNo}
+                          onChange={(e) => handleRegistrarCertChange(idx, "certificateNo", e.target.value)}
+                          disabled={savingRegistrarInfo}
+                        />
+                      </div>
+                      <div className="field-group" style={{ flex: 1, marginBottom: 0 }}>
+                        <label>Units</label>
+                        <input
+                          type="text"
+                          value={cert.units}
+                          onChange={(e) => handleRegistrarCertChange(idx, "units", e.target.value.replace(/\D/g, ""))}
+                          disabled={savingRegistrarInfo}
+                        />
+                      </div>
+                      {registrarCertificates.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeRegistrarCertRow(idx)}
+                          disabled={savingRegistrarInfo}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "#C0392B", padding: "9px" }}
+                        >
+                          <i className="ti ti-trash" style={{ fontSize: "16px" }} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    style={{ width: "auto", padding: "7px 14px", fontSize: "13px", marginBottom: "12px" }}
+                    onClick={addRegistrarCertRow}
+                    disabled={savingRegistrarInfo}
+                  >
+                    <i className="ti ti-plus" style={{ fontSize: "14px" }} /> Add another certificate
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    style={{ width: "auto", padding: "8px 16px" }}
+                    onClick={handleSaveRegistrarInfo}
+                    disabled={savingRegistrarInfo}
+                  >
+                    {savingRegistrarInfo ? (
+                      <>
+                        <span className="spinner" /> Saving...
+                      </>
+                    ) : (
+                      <>
+                        <i className="ti ti-send" style={{ fontSize: "15px" }} /> Save &amp; send to broker
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Resend to broker — only when certificates already exist and it's either unsent or needs resending */}
+              {request.fields?.certificates?.length > 0 && (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ width: "auto", padding: "8px 16px", fontSize: "13px" }}
+                  onClick={handleSendToBroker}
+                  disabled={sendingToBroker || !request.fields?.brokerEmail}
+                  title={!request.fields?.brokerEmail ? "No broker email on file" : undefined}
+                >
+                  {sendingToBroker ? (
+                    <>
+                      <span className="spinner spinner-dark" /> Sending...
+                    </>
+                  ) : (
+                    <>
+                      <i className="ti ti-mail-forward" style={{ fontSize: "14px" }} />{" "}
+                      {request.fields?.brokerSentAt ? "Resend to broker" : "Send to broker"}
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Requested changes */}
           {request.fields && Object.keys(request.fields).length > 0 && (
             <div
               style={{
                 background: "var(--admin-card)",
-                border: "1px solid #e8e8e8",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "12px",
                 padding: "20px",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -549,7 +770,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                 }}
               >
                 {Object.entries(request.fields).map(([key, value]) =>
-                  value ? (
+                  value && typeof value !== "object" ? (
                     <InfoItem key={key} label={formatKey(key)} value={value} />
                   ) : null,
                 )}
@@ -561,7 +782,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           <div
             style={{
               background: "var(--admin-card)",
-              border: "1px solid #e8e8e8",
+              border: "1px solid var(--admin-card-border)",
               borderRadius: "12px",
               padding: "20px",
               boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -590,7 +811,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                     justifyContent: "space-between",
                     padding: "10px 12px",
                     background: "#fafafa",
-                    border: "1px solid #e8e8e8",
+                    border: "1px solid var(--admin-card-border)",
                     borderRadius: "8px",
                     marginBottom: "8px",
                   }}
@@ -644,7 +865,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           <div
             style={{
               background: "var(--admin-card)",
-              border: "1px solid #e8e8e8",
+              border: "1px solid var(--admin-card-border)",
               borderRadius: "12px",
               padding: "20px",
               boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -854,7 +1075,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             <div
               style={{
                 background: "var(--admin-card)",
-                border: "1px solid #e8e8e8",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "12px",
                 padding: "16px",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -916,7 +1137,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             <div
               style={{
                 background: "var(--admin-card)",
-                border: "1px solid #e8e8e8",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "12px",
                 padding: "16px",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -1002,7 +1223,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                     <div
                       style={{
                         background: "#fafafa",
-                        border: "1px solid #e8e8e8",
+                        border: "1px solid var(--admin-card-border)",
                         borderRadius: "8px",
                         padding: "12px",
                         marginBottom: "10px",
@@ -1259,7 +1480,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             <div
               style={{
                 background: "var(--admin-card)",
-                border: "1px solid #e8e8e8",
+                border: "1px solid var(--admin-card-border)",
                 borderRadius: "12px",
                 padding: "16px",
                 boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -1334,7 +1555,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           <div
             style={{
               background: "var(--admin-card)",
-              border: "1px solid #e8e8e8",
+              border: "1px solid var(--admin-card-border)",
               borderRadius: "12px",
               padding: "16px",
               boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -1453,6 +1674,21 @@ function formatKey(key) {
     mandateCode: "Mandate code",
     cscsNumber: "CHN/CSCS Number",
     fullName: "Full name",
+    surname: "Surname",
+    firstName: "First name",
+    middleName: "Middle name",
+    gsm: "GSM number",
+    cscsAccountNo: "CSCS Investor's A/C No.",
+    chn: "Clearing House No. (CHN)",
+    rin: "Registrar's ID No. (RIN)",
+    accountName: "Bank account name",
+    bankName: "Bank",
+    bankAccountNo: "Bank A/C number (NUBAN)",
+    ageOfAccount: "Age of A/C",
+    signatureName: "Signed by (typed name)",
+    witnessName: "Witness name",
+    witnessGsm: "Witness GSM number",
+    witnessAddress: "Witness address",
   };
   return map[key] || key;
 }

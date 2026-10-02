@@ -62,6 +62,11 @@ const TYPE_CONFIG = {
     bg: "#ECFDF5",
   },
   nubanChange: { label: "NUBAN Change", color: "#E31E24", bg: "#FEF2F2" },
+  dematerialization: {
+    label: "Dematerialization",
+    color: "#0F766E",
+    bg: "#F0FDFA",
+  },
 };
 
 export function StatusBadge({ status }) {

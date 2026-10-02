@@ -13,6 +13,7 @@ const autoAssignRoutes = require("./routes/autoAssign");
 const { startAutoAssignScheduler } = require("./utils/autoAssign");
 const { startWaitingOnCustomerScheduler } = require("./utils/sla");
 const cannedResponseRoutes = require("./routes/cannedResponses");
+const dematerializationRoutes = require("./routes/dematerialization");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -56,6 +57,7 @@ app.use("/api/escalations", escalationRoutes);
 app.use("/api/auto-assign", autoAssignRoutes);
 app.use("/api/canned-responses", cannedResponseRoutes);
 app.use("/api/uploads", uploadRoutes);
+app.use("/api/dematerialization", dematerializationRoutes);
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/api/health", (req, res) => {

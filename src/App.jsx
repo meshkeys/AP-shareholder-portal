@@ -14,6 +14,8 @@ import NUBANChange from "./pages/NUBANChange";
 import ReviewSummary from "./pages/ReviewSummary";
 import Success from "./pages/Success";
 import KYCStandalone from "./pages/KYCStandalone";
+import DematForm from "./pages/DematForm";
+import BrokerReview from "./pages/BrokerReview";
 import AutoAssign from "./admin/pages/AutoAssign";
 import APLogo from "./assets/AP_LOGO.png";
 
@@ -35,6 +37,8 @@ import { useTheme } from "./admin/hooks/useTheme";
 
 const isAdminRoute = window.location.pathname.startsWith("/admin");
 const isKYCRoute = window.location.pathname.startsWith("/kyc-update");
+const isDematRoute = window.location.pathname.startsWith("/dematerialization");
+const isBrokerReviewRoute = window.location.pathname.startsWith("/broker-review");
 
 export default function App() {
   const { isDark, toggleTheme } = useTheme();
@@ -166,6 +170,16 @@ export default function App() {
   // ── KYC standalone route ──────────────────────────────────────────────────
   if (isKYCRoute) {
     return <KYCStandalone />;
+  }
+
+  // ── Dematerialization standalone route ────────────────────────────────────
+  if (isDematRoute) {
+    return <DematForm />;
+  }
+
+  // ── Broker review (tokenless, reached via emailed link) ───────────────────
+  if (isBrokerReviewRoute) {
+    return <BrokerReview />;
   }
 
   // ── ADMIN DASHBOARD ───────────────────────────────────────────────────────

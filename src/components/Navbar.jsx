@@ -80,6 +80,24 @@ export default function Navbar() {
               marginLeft: "8px",
             }}
           >
+            {/* TEMPORARY — remove once the Dematerialization card exists on
+                the main site and links here directly. */}
+            <a
+              href="/dematerialization"
+              style={{
+                padding: "9px 18px",
+                borderRadius: "6px",
+                border: "1.5px dashed #b36a00",
+                background: "#fff8e6",
+                color: "#b36a00",
+                fontSize: "13px",
+                fontWeight: "600",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Test: Dematerialization
+            </a>
             <a
               href="https://www.africaprudential.com/Contact-Us"
               target="_blank"

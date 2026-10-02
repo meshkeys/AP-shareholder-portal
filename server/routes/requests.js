@@ -114,6 +114,9 @@ router.get("/stats/summary", authenticate, async (req, res) => {
         ).length,
         nubanChange: data.filter((r) => r.request_type === "nubanChange")
           .length,
+        dematerialization: data.filter(
+          (r) => r.request_type === "dematerialization",
+        ).length,
       },
     };
 
@@ -707,11 +710,11 @@ router.post("/:id/revoke-approval", authenticate, async (req, res) => {
     const { data: updated, error } = await supabase
       .from("requests")
       .update({
-        status: "approval_revoked",
+        status: "rejected",
         external_sync: false,
         external_ref: null,
       })
-      .eq("id", id)
+      .eq("id", request.id)
       .select()
       .single();
 

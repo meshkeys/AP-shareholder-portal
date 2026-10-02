@@ -382,3 +382,28 @@ export async function resetPassword(token, newPassword) {
   });
   return handleResponse(res);
 }
+
+// ── Dematerialization ─────────────────────────────────────────────────────────
+
+export async function saveRegistrarCertificates(requestId, certificates) {
+  const res = await fetch(
+    `${BASE_URL}/api/dematerialization/${requestId}/registrar-info`,
+    {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ certificates }),
+    },
+  );
+  return handleResponse(res);
+}
+
+export async function sendToBroker(requestId) {
+  const res = await fetch(
+    `${BASE_URL}/api/dematerialization/${requestId}/send-to-broker`,
+    {
+      method: "POST",
+      headers: getHeaders(),
+    },
+  );
+  return handleResponse(res);
+}

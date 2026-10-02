@@ -227,6 +227,56 @@ async function sendWaitingClosedEmail(
   });
 }
 
+// ── Send Broker Review Email ──────────────────────────────────────────────────
+async function sendBrokerReviewEmail(
+  toEmail,
+  brokerName,
+  shareholderName,
+  referenceNumber,
+  reviewUrl,
+) {
+  await client.transactionalEmails.sendTransacEmail({
+    subject: `Dematerialization Request Requires Your Action — ${referenceNumber}`,
+    sender: {
+      name: process.env.SMTP_FROM_NAME || "ShareReg Portal",
+      email: process.env.BREVO_SENDER_EMAIL,
+    },
+    to: [{ email: toEmail, name: brokerName }],
+    htmlContent: `
+      <div style="font-family:Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px">
+        <div style="background:#1a1a1a;padding:20px 24px;border-radius:8px 8px 0 0">
+          <h2 style="color:#fff;margin:0;font-size:18px">ShareReg Portal</h2>
+          <p style="color:rgba(255,255,255,0.6);margin:4px 0 0;font-size:13px">Dematerialization request</p>
+        </div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-top:none;padding:24px;border-radius:0 0 8px 8px">
+          <p style="font-size:15px;color:#1a1a1a;margin-bottom:8px">Dear ${brokerName},</p>
+          <p style="font-size:14px;color:#6b6b6b;line-height:1.6;margin-bottom:20px">
+            Your client <strong>${shareholderName}</strong> has submitted a dematerialization request
+            and named you as their stockbroker. Please review the full request below, confirm the
+            details are correct, then complete, sign and stamp your section before returning it to us.
+          </p>
+          <div style="background:#f8f8f8;border-radius:8px;padding:16px;margin-bottom:20px">
+            <p style="font-size:12px;color:#6b6b6b;margin-bottom:4px">Reference number</p>
+            <p style="font-size:16px;font-weight:700;color:#1a1a1a;font-family:monospace;letter-spacing:2px">${referenceNumber}</p>
+          </div>
+          <div style="text-align:center;margin-bottom:24px">
+            <a href="${reviewUrl}" style="display:inline-block;padding:14px 32px;background:#C0392B;color:#fff;text-decoration:none;border-radius:8px;font-size:15px;font-weight:600">
+              Review request &amp; complete your section →
+            </a>
+          </div>
+          <p style="font-size:12px;color:#6b6b6b;line-height:1.6;margin-bottom:4px">
+            This link does not require a login. If you did not expect this request, please contact
+            us before taking any action.
+          </p>
+          <p style="font-size:12px;color:#b0b0b0;text-align:center;margin-top:20px">
+            ShareReg Portal &nbsp;·&nbsp; Shareholder Registry Services
+          </p>
+        </div>
+      </div>
+    `,
+  });
+}
+
 module.exports = {
   sendOTPEmail,
   sendStatusUpdateEmail,
@@ -234,4 +284,5 @@ module.exports = {
   sendPasswordResetEmail,
   sendFlaggedEmail,
   sendWaitingClosedEmail,
+  sendBrokerReviewEmail,
 };

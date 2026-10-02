@@ -25,6 +25,7 @@ const TYPE_OPTIONS = [
   { value: "addressUpdate", label: "Address Update" },
   { value: "signatureUpdate", label: "Signature Update" },
   { value: "nubanChange", label: "NUBAN Change" },
+  { value: "dematerialization", label: "Dematerialization" },
 ];
 
 export default function Requests({ agent, onNavigate }) {
