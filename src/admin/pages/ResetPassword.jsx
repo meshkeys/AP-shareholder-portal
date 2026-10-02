@@ -69,7 +69,7 @@ export default function ResetPassword({ token, onDone }) {
             className="ti ti-alert-circle"
             style={{
               fontSize: "40px",
-              color: "#C0392B",
+              color: "#E31E24",
               display: "block",
               marginBottom: "16px",
             }}
@@ -105,7 +105,7 @@ export default function ResetPassword({ token, onDone }) {
             style={{
               width: "52px",
               height: "52px",
-              background: "#C0392B",
+              background: "#E31E24",
               borderRadius: "12px",
               display: "flex",
               alignItems: "center",

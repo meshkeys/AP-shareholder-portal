@@ -50,7 +50,7 @@ export default function NUBANChange({ onBack }) {
           style={{
             fontSize: "11px",
             fontWeight: "500",
-            color: "#C0392B",
+            color: "#E31E24",
             letterSpacing: "0.6px",
             textTransform: "uppercase",
             marginBottom: "6px",
@@ -96,7 +96,7 @@ export default function NUBANChange({ onBack }) {
           >
             <i
               className="ti ti-building-bank"
-              style={{ fontSize: "26px", color: "#C0392B" }}
+              style={{ fontSize: "26px", color: "#E31E24" }}
             />
           </div>
           <h3 style={{ marginBottom: "6px" }}>NIBSS NUBAN Update Portal</h3>
@@ -146,7 +146,7 @@ export default function NUBANChange({ onBack }) {
                     width: "22px",
                     height: "22px",
                     borderRadius: "50%",
-                    background: "#C0392B",
+                    background: "#E31E24",
                     color: "#fff",
                     fontSize: "11px",
                     fontWeight: "500",
@@ -184,7 +184,7 @@ export default function NUBANChange({ onBack }) {
               gap: "8px",
               width: "100%",
               padding: "10px 16px",
-              background: "#C0392B",
+              background: "#E31E24",
               color: "#fff",
               border: "none",
               borderRadius: "8px",
@@ -294,7 +294,7 @@ export default function NUBANChange({ onBack }) {
                 <p
                   style={{
                     fontSize: "12px",
-                    color: "#C0392B",
+                    color: "#E31E24",
                     marginTop: "6px",
                   }}
                 >

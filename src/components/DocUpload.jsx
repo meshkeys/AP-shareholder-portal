@@ -44,7 +44,7 @@ export default function DocUpload({ doc, file, onFile, disabled }) {
           className={`ti ${uploaded ? "ti-circle-check" : "ti-file-description"}`}
           style={{
             fontSize: "20px",
-            color: uploaded ? "#1a7a40" : "#C0392B",
+            color: uploaded ? "#1a7a40" : "#E31E24",
             flexShrink: 0,
             marginTop: "2px",
           }}
@@ -111,7 +111,7 @@ export default function DocUpload({ doc, file, onFile, disabled }) {
             borderRadius: "6px",
             border: uploaded ? "1px solid #a8dfc0" : "1px solid #e8b4af",
             background: uploaded ? "#f0faf4" : "#fdf1f0",
-            color: uploaded ? "#1a7a40" : "#C0392B",
+            color: uploaded ? "#1a7a40" : "#E31E24",
             cursor: disabled ? "not-allowed" : "pointer",
             whiteSpace: "nowrap",
           }}

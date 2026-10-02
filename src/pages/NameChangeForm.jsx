@@ -124,7 +124,7 @@ export default function NameChangeForm({ profile, onNext, onBack }) {
           style={{
             fontSize: "11px",
             fontWeight: "500",
-            color: "#C0392B",
+            color: "#E31E24",
             letterSpacing: "0.6px",
             textTransform: "uppercase",
             marginBottom: "6px",
@@ -161,12 +161,12 @@ export default function NameChangeForm({ profile, onNext, onBack }) {
             className="ti ti-alert-triangle"
             style={{
               fontSize: "16px",
-              color: "#C0392B",
+              color: "#E31E24",
               flexShrink: 0,
               marginTop: "1px",
             }}
           />
-          <p style={{ fontSize: "13px", color: "#C0392B", lineHeight: 1.5 }}>
+          <p style={{ fontSize: "13px", color: "#E31E24", lineHeight: 1.5 }}>
             <strong>Important:</strong> Your new name must tally with your bank
             account name pattern.
           </p>
@@ -209,7 +209,7 @@ export default function NameChangeForm({ profile, onNext, onBack }) {
                     gap: "10px",
                     padding: "12px 14px",
                     background: isSelected ? "#fdf1f0" : "#fafafa",
-                    border: `1.5px solid ${isSelected ? "#C0392B" : "#e8e8e8"}`,
+                    border: `1.5px solid ${isSelected ? "#E31E24" : "#e8e8e8"}`,
                     borderRadius: "8px",
                     cursor: "pointer",
                     textAlign: "left",
@@ -222,8 +222,8 @@ export default function NameChangeForm({ profile, onNext, onBack }) {
                       width: "18px",
                       height: "18px",
                       borderRadius: "50%",
-                      border: `2px solid ${isSelected ? "#C0392B" : "#d0d0d0"}`,
-                      background: isSelected ? "#C0392B" : "transparent",
+                      border: `2px solid ${isSelected ? "#E31E24" : "#d0d0d0"}`,
+                      background: isSelected ? "#E31E24" : "transparent",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -240,7 +240,7 @@ export default function NameChangeForm({ profile, onNext, onBack }) {
                   <span
                     style={{
                       fontSize: "14px",
-                      color: isSelected ? "#C0392B" : "#1a1a1a",
+                      color: isSelected ? "#E31E24" : "#1a1a1a",
                       fontWeight: isSelected ? "500" : "400",
                     }}
                   >
@@ -294,12 +294,12 @@ export default function NameChangeForm({ profile, onNext, onBack }) {
                     padding: "12px",
                     background:
                       secondaryMarket === true ? "#fdf1f0" : "#fafafa",
-                    border: `1.5px solid ${secondaryMarket === true ? "#C0392B" : "#e8e8e8"}`,
+                    border: `1.5px solid ${secondaryMarket === true ? "#E31E24" : "#e8e8e8"}`,
                     borderRadius: "8px",
                     cursor: "pointer",
                     fontSize: "14px",
                     fontWeight: secondaryMarket === true ? "500" : "400",
-                    color: secondaryMarket === true ? "#C0392B" : "#1a1a1a",
+                    color: secondaryMarket === true ? "#E31E24" : "#1a1a1a",
                     transition: "all 0.15s",
                   }}
                 >
@@ -323,12 +323,12 @@ export default function NameChangeForm({ profile, onNext, onBack }) {
                     padding: "12px",
                     background:
                       secondaryMarket === false ? "#fdf1f0" : "#fafafa",
-                    border: `1.5px solid ${secondaryMarket === false ? "#C0392B" : "#e8e8e8"}`,
+                    border: `1.5px solid ${secondaryMarket === false ? "#E31E24" : "#e8e8e8"}`,
                     borderRadius: "8px",
                     cursor: "pointer",
                     fontSize: "14px",
                     fontWeight: secondaryMarket === false ? "500" : "400",
-                    color: secondaryMarket === false ? "#C0392B" : "#1a1a1a",
+                    color: secondaryMarket === false ? "#E31E24" : "#1a1a1a",
                     transition: "all 0.15s",
                   }}
                 >

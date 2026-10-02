@@ -117,6 +117,11 @@ export default function BrokerReview() {
 
   const fields = request.fields || {};
   const certificates = fields.certificates || [];
+  const passportPhoto = documents.find((d) => d.document_type === "passportPhoto");
+  const signatureImage = documents.find((d) => d.document_type === "shareholderSignature");
+  const otherDocuments = documents.filter(
+    (d) => d.document_type !== "passportPhoto" && d.document_type !== "shareholderSignature",
+  );
 
   if (done) {
     return (
@@ -154,7 +159,7 @@ export default function BrokerReview() {
       <Navbar />
       <main style={{ flex: 1, padding: "32px 24px", maxWidth: "720px", margin: "0 auto", width: "100%" }}>
         <div className="card no-print" style={{ marginBottom: "16px" }}>
-          <p style={{ fontSize: "11px", fontWeight: "500", color: "#C0392B", letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: "6px" }}>
+          <p style={{ fontSize: "11px", fontWeight: "500", color: "#E31E24", letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: "6px" }}>
             Dematerialization request — broker review
           </p>
           <h2 style={{ marginBottom: "8px" }}>Reference {request.reference_number}</h2>
@@ -174,9 +179,35 @@ export default function BrokerReview() {
         )}
 
         <div className="card" style={{ marginBottom: "16px" }}>
-          <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "14px" }}>
-            Shareholder details
-          </h3>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "14px" }}>
+            <h3 style={{ fontSize: "14px", fontWeight: "500" }}>Shareholder details</h3>
+            <div
+              style={{
+                width: "90px",
+                height: "110px",
+                flexShrink: 0,
+                border: "1px solid #e0e0e0",
+                borderRadius: "6px",
+                overflow: "hidden",
+                background: "#fafafa",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {passportPhoto ? (
+                <img
+                  src={passportPhoto.file_url}
+                  alt="Shareholder passport photograph"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <p style={{ fontSize: "10px", color: "#b0b0b0", textAlign: "center", padding: "6px" }}>
+                  No photo attached
+                </p>
+              )}
+            </div>
+          </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
             <Field label="Full name" value={fields.fullName} />
             <Field label="Address" value={fields.address} />
@@ -233,15 +264,51 @@ export default function BrokerReview() {
 
         <div className="card" style={{ marginBottom: "16px" }}>
           <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "14px" }}>
-            Shareholder signature &amp; documents
+            Shareholder's signature
           </h3>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "14px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "16px" }}>
+            <div
+              style={{
+                width: "160px",
+                height: "70px",
+                flexShrink: 0,
+                border: "1px solid #e0e0e0",
+                borderRadius: "6px",
+                background: "#fafafa",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}
+            >
+              {signatureImage ? (
+                <img
+                  src={signatureImage.file_url}
+                  alt="Shareholder signature"
+                  style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                />
+              ) : (
+                <p
+                  style={{
+                    fontFamily: "cursive, 'Brush Script MT', sans-serif",
+                    fontSize: "20px",
+                    color: "#1a1a1a",
+                  }}
+                >
+                  {fields.signatureName || "—"}
+                </p>
+              )}
+            </div>
             <Field label="Signed by (typed name)" value={fields.signatureName} />
           </div>
-          {documents.length === 0 ? (
-            <p style={{ fontSize: "13px", color: "#6b6b6b" }}>No documents attached.</p>
+
+          <p style={{ fontSize: "12px", fontWeight: "500", color: "#6b6b6b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
+            Supporting documents
+          </p>
+          {otherDocuments.length === 0 ? (
+            <p style={{ fontSize: "13px", color: "#6b6b6b" }}>No other documents attached.</p>
           ) : (
-            documents.map((doc) => (
+            otherDocuments.map((doc) => (
               <a
                 key={doc.id}
                 href={doc.file_url}
@@ -252,7 +319,7 @@ export default function BrokerReview() {
                   alignItems: "center",
                   gap: "8px",
                   fontSize: "13px",
-                  color: "#C0392B",
+                  color: "#E31E24",
                   textDecoration: "none",
                   marginBottom: "6px",
                 }}

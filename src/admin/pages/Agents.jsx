@@ -129,7 +129,7 @@ export default function Agents({ agent }) {
   }
 
   const roleColors = {
-    admin: "#C0392B",
+    admin: "#E31E24",
     lead_supervisor: "#7c3aed",
     supervisor: "#2255cc",
     agent: "#1a7a40",
@@ -217,7 +217,7 @@ export default function Agents({ agent }) {
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "#C0392B",
+              color: "#E31E24",
             }}
           >
             <i className="ti ti-x" style={{ fontSize: "14px" }} />
@@ -246,7 +246,7 @@ export default function Agents({ agent }) {
           >
             <i
               className="ti ti-user-plus"
-              style={{ fontSize: "16px", marginRight: "6px", color: "#C0392B" }}
+              style={{ fontSize: "16px", marginRight: "6px", color: "#E31E24" }}
             />
             Add new agent
           </h3>
@@ -614,7 +614,7 @@ export default function Agents({ agent }) {
                           onClick={() => handleDeactivate(a.id, a.is_active)}
                           style={{
                             fontSize: "12px",
-                            color: a.is_active ? "#C0392B" : "#1a7a40",
+                            color: a.is_active ? "#E31E24" : "#1a7a40",
                             background: "none",
                             border: `1px solid ${a.is_active ? "#e8b4af" : "#a8dfc0"}`,
                             borderRadius: "6px",
@@ -628,7 +628,7 @@ export default function Agents({ agent }) {
                           onClick={() => handleDelete(a.id, a.full_name)}
                           style={{
                             fontSize: "12px",
-                            color: "#C0392B",
+                            color: "#E31E24",
                             background: "#fdf1f0",
                             border: "1px solid #e8b4af",
                             borderRadius: "6px",

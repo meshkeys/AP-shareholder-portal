@@ -110,7 +110,7 @@ export default function Dashboard({ agent, onNavigate }) {
             label="Rejected"
             value={stats.rejected}
             icon="ti-circle-x"
-            color="#C0392B"
+            color="#E31E24"
             subLabel="Could not be processed"
           />
           <StatCard
@@ -156,7 +156,7 @@ export default function Dashboard({ agent, onNavigate }) {
               onClick={() => onNavigate("requests")}
               style={{
                 fontSize: "12px",
-                color: "#C0392B",
+                color: "#E31E24",
                 background: "none",
                 border: "none",
                 cursor: "pointer",
@@ -306,7 +306,7 @@ export default function Dashboard({ agent, onNavigate }) {
               onClick={() => onNavigate("agents")}
               style={{
                 fontSize: "12px",
-                color: "#C0392B",
+                color: "#E31E24",
                 background: "none",
                 border: "none",
                 cursor: "pointer",
@@ -401,7 +401,7 @@ export default function Dashboard({ agent, onNavigate }) {
                     <td
                       style={{
                         padding: "12px 16px",
-                        color: "#C0392B",
+                        color: "#E31E24",
                         fontWeight: "500",
                       }}
                     >

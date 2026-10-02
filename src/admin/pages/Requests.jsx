@@ -270,22 +270,22 @@ export default function Requests({ agent, onNavigate }) {
                   <p style={{ fontSize: "11px", color: "#6b6b6b", margin: 0 }}>
                     Exporting with active filters:
                     {filters.status && (
-                      <span style={{ color: "#C0392B", marginLeft: "4px" }}>
+                      <span style={{ color: "#E31E24", marginLeft: "4px" }}>
                         {filters.status}
                       </span>
                     )}
                     {filters.type && (
-                      <span style={{ color: "#C0392B", marginLeft: "4px" }}>
+                      <span style={{ color: "#E31E24", marginLeft: "4px" }}>
                         {filters.type}
                       </span>
                     )}
                     {dateFrom && (
-                      <span style={{ color: "#C0392B", marginLeft: "4px" }}>
+                      <span style={{ color: "#E31E24", marginLeft: "4px" }}>
                         from {dateFrom}
                       </span>
                     )}
                     {dateTo && (
-                      <span style={{ color: "#C0392B", marginLeft: "4px" }}>
+                      <span style={{ color: "#E31E24", marginLeft: "4px" }}>
                         to {dateTo}
                       </span>
                     )}
@@ -335,7 +335,7 @@ export default function Requests({ agent, onNavigate }) {
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "#C0392B",
+              color: "#E31E24",
             }}
           >
             <i className="ti ti-x" style={{ fontSize: "14px" }} />
@@ -427,7 +427,7 @@ export default function Requests({ agent, onNavigate }) {
             }}
             style={{
               ...selectStyle,
-              color: "#C0392B",
+              color: "#E31E24",
               border: "1px solid #e8b4af",
               background: "#fdf1f0",
             }}
@@ -458,7 +458,7 @@ export default function Requests({ agent, onNavigate }) {
           <p style={{ fontSize: "13px", color: "#fff", fontWeight: "500" }}>
             <i
               className="ti ti-checkbox"
-              style={{ fontSize: "15px", marginRight: "6px", color: "#C0392B" }}
+              style={{ fontSize: "15px", marginRight: "6px", color: "#E31E24" }}
             />
             {selected.length} ticket{selected.length !== 1 ? "s" : ""} selected
           </p>
@@ -492,7 +492,7 @@ export default function Requests({ agent, onNavigate }) {
             disabled={!bulkAgent || bulkAssigning}
             style={{
               padding: "7px 14px",
-              background: "#C0392B",
+              background: "#E31E24",
               color: "#fff",
               border: "none",
               borderRadius: "6px",
@@ -693,7 +693,7 @@ export default function Requests({ agent, onNavigate }) {
                           style={{
                             fontFamily: "monospace",
                             fontSize: "12px",
-                            color: "#C0392B",
+                            color: "#E31E24",
                             fontWeight: "500",
                           }}
                         >
@@ -704,7 +704,7 @@ export default function Requests({ agent, onNavigate }) {
                             style={{
                               display: "block",
                               fontSize: "10px",
-                              color: "#C0392B",
+                              color: "#E31E24",
                               fontWeight: "500",
                               marginTop: "2px",
                             }}
@@ -756,7 +756,7 @@ export default function Requests({ agent, onNavigate }) {
                                   ? "#1a7a40"
                                   : slaStatus === "at_risk"
                                     ? "#b36a00"
-                                    : "#C0392B",
+                                    : "#E31E24",
                               border: `1px solid ${slaStatus === "on_track" ? "#a8dfc0" : slaStatus === "at_risk" ? "#f5d78e" : "#e8b4af"}`,
                             }}
                           >

@@ -127,7 +127,7 @@ export default function ReviewSummary({
         {/* Portal header — shown on print */}
         <div
           style={{
-            borderBottom: "2px solid #C0392B",
+            borderBottom: "2px solid #E31E24",
             paddingBottom: "16px",
             marginBottom: "20px",
           }}
@@ -144,7 +144,7 @@ export default function ReviewSummary({
               style={{
                 width: "36px",
                 height: "36px",
-                background: "#C0392B",
+                background: "#E31E24",
                 borderRadius: "6px",
                 display: "flex",
                 alignItems: "center",
@@ -172,7 +172,7 @@ export default function ReviewSummary({
           style={{
             fontSize: "11px",
             fontWeight: "500",
-            color: "#C0392B",
+            color: "#E31E24",
             letterSpacing: "0.6px",
             textTransform: "uppercase",
             marginBottom: "6px",

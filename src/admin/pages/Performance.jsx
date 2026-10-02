@@ -32,7 +32,7 @@ const SLA_COLORS = {
   },
   breached: {
     bg: "#fdf1f0",
-    color: "#C0392B",
+    color: "#E31E24",
     border: "#e8b4af",
     label: "Breached",
   },
@@ -98,7 +98,7 @@ export default function Performance({ agent, onNavigate }) {
           ? "#2255cc"
           : score >= 60
             ? "#b36a00"
-            : "#C0392B";
+            : "#E31E24";
     return (
       <div
         style={{
@@ -154,7 +154,7 @@ export default function Performance({ agent, onNavigate }) {
     );
   }
 
-  function MetricBar({ label, value, target, unit = "%", color = "#C0392B" }) {
+  function MetricBar({ label, value, target, unit = "%", color = "#E31E24" }) {
     const pct = Math.min(100, target ? (value / target) * 100 : value);
     return (
       <div style={{ marginBottom: "14px" }}>
@@ -372,7 +372,7 @@ export default function Performance({ agent, onNavigate }) {
                 onClick={loadData}
                 style={{
                   padding: "7px 14px",
-                  background: "#C0392B",
+                  background: "#E31E24",
                   color: "#fff",
                   border: "none",
                   borderRadius: "6px",
@@ -563,7 +563,7 @@ export default function Performance({ agent, onNavigate }) {
                   label: "Breached",
                   value: perf?.sla_breached_count || 0,
                   icon: "ti-alert-triangle",
-                  color: "#C0392B",
+                  color: "#E31E24",
                 },
                 {
                   label: "Avg resolve",
@@ -779,7 +779,7 @@ export default function Performance({ agent, onNavigate }) {
                             style={{
                               fontFamily: "monospace",
                               fontSize: "12px",
-                              color: "#C0392B",
+                              color: "#E31E24",
                               fontWeight: "500",
                             }}
                           >
@@ -802,7 +802,7 @@ export default function Performance({ agent, onNavigate }) {
                           style={{
                             padding: "10px 14px",
                             color: ticket.sla?.resolve?.breached
-                              ? "#C0392B"
+                              ? "#E31E24"
                               : "#6b6b6b",
                             fontWeight: ticket.sla?.resolve?.breached
                               ? "500"
@@ -901,7 +901,7 @@ export default function Performance({ agent, onNavigate }) {
                           ? "#2255cc"
                           : score >= 60
                             ? "#b36a00"
-                            : "#C0392B";
+                            : "#E31E24";
                     const medal =
                       idx === 0
                         ? "🥇"
@@ -970,7 +970,7 @@ export default function Performance({ agent, onNavigate }) {
                         <td
                           style={{
                             padding: "12px 14px",
-                            color: "#C0392B",
+                            color: "#E31E24",
                             fontWeight: "500",
                           }}
                         >

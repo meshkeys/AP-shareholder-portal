@@ -21,7 +21,7 @@ export default function Success({ ticket, onUpdateAnother, onDone }) {
         >
           <i
             className="ti ti-check"
-            style={{ fontSize: "30px", color: "#C0392B" }}
+            style={{ fontSize: "30px", color: "#E31E24" }}
             aria-hidden="true"
           />
         </div>
@@ -95,7 +95,7 @@ export default function Success({ ticket, onUpdateAnother, onDone }) {
             <span
               style={{
                 fontWeight: "600",
-                color: "#C0392B",
+                color: "#E31E24",
                 fontSize: "15px",
                 letterSpacing: "1px",
               }}
@@ -179,7 +179,7 @@ export default function Success({ ticket, onUpdateAnother, onDone }) {
           Need help?{" "}
           <a
             href="mailto:support@sharereg.ng"
-            style={{ color: "#C0392B", fontWeight: "500" }}
+            style={{ color: "#E31E24", fontWeight: "500" }}
           >
             support@sharereg.ng
           </a>

@@ -273,7 +273,7 @@ export default function AutoAssign({ agent }) {
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "#C0392B",
+              color: "#E31E24",
             }}
           >
             <i className="ti ti-x" style={{ fontSize: "14px" }} />
@@ -314,7 +314,7 @@ export default function AutoAssign({ agent }) {
                   style={{
                     fontSize: "16px",
                     marginRight: "8px",
-                    color: "#C0392B",
+                    color: "#E31E24",
                   }}
                 />
                 Global settings
@@ -533,7 +533,7 @@ export default function AutoAssign({ agent }) {
         >
           <i
             className="ti ti-users"
-            style={{ fontSize: "16px", marginRight: "8px", color: "#C0392B" }}
+            style={{ fontSize: "16px", marginRight: "8px", color: "#E31E24" }}
           />
           Agent configuration
         </h2>
@@ -805,9 +805,9 @@ export default function AutoAssign({ agent }) {
                                 width: "16px",
                                 height: "16px",
                                 borderRadius: "3px",
-                                border: `2px solid ${isChecked ? "#C0392B" : "#d0d0d0"}`,
+                                border: `2px solid ${isChecked ? "#E31E24" : "#d0d0d0"}`,
                                 background: isChecked
-                                  ? "#C0392B"
+                                  ? "#E31E24"
                                   : "transparent",
                                 display: "flex",
                                 alignItems: "center",
@@ -825,7 +825,7 @@ export default function AutoAssign({ agent }) {
                             <span
                               style={{
                                 fontSize: "13px",
-                                color: isChecked ? "#C0392B" : "#6b6b6b",
+                                color: isChecked ? "#E31E24" : "#6b6b6b",
                                 fontWeight: isChecked ? "500" : "400",
                               }}
                             >

@@ -650,8 +650,8 @@ tr:hover td {
 /* p and span text in dark mode */
 [data-admin-theme="dark"]
   p:not([style*="color: #E31E24"]):not([style*="color: #1a7a40"]):not(
-    [style*="color: #C0392B"]
-  ):not([style*="color: #2255cc"]) {
+    [style*="color: #2255cc"]
+  ) {
   color: var(--admin-text) !important;
 }
 

@@ -53,7 +53,7 @@ export default function SignatoryRow({
         <p style={{ fontSize: "13px", fontWeight: "500", color: "#1a1a1a" }}>
           <i
             className="ti ti-user"
-            style={{ fontSize: "14px", marginRight: "6px", color: "#C0392B" }}
+            style={{ fontSize: "14px", marginRight: "6px", color: "#E31E24" }}
           />
           Signatory {index + 1}
         </p>
@@ -65,7 +65,7 @@ export default function SignatoryRow({
             style={{
               background: "none",
               border: "none",
-              color: "#C0392B",
+              color: "#E31E24",
               fontSize: "12px",
               cursor: "pointer",
               display: "flex",
@@ -173,7 +173,7 @@ export default function SignatoryRow({
                 ? "1px solid #a8dfc0"
                 : "1px solid #e8b4af",
               background: signatory.passport ? "#f0faf4" : "#fdf1f0",
-              color: signatory.passport ? "#1a7a40" : "#C0392B",
+              color: signatory.passport ? "#1a7a40" : "#E31E24",
               cursor: disabled ? "not-allowed" : "pointer",
               whiteSpace: "nowrap",
               flexShrink: 0,

@@ -72,7 +72,7 @@ export default function AddressForm({ profile, onNext, onBack }) {
           style={{
             fontSize: "11px",
             fontWeight: "500",
-            color: "#C0392B",
+            color: "#E31E24",
             letterSpacing: "0.6px",
             textTransform: "uppercase",
             marginBottom: "6px",

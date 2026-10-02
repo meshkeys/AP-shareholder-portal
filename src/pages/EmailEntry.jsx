@@ -65,7 +65,7 @@ export default function EmailEntry({ onNext }) {
         style={{
           fontSize: "11px",
           fontWeight: "500",
-          color: "#C0392B",
+          color: "#E31E24",
           letterSpacing: "0.6px",
           textTransform: "uppercase",
           marginBottom: "6px",
@@ -228,7 +228,7 @@ export default function EmailEntry({ onNext }) {
                 <i
                   className="ti ti-mail"
                   style={{
-                    color: "#C0392B",
+                    color: "#E31E24",
                     fontSize: "16px",
                     marginTop: "1px",
                     flexShrink: 0,
@@ -241,7 +241,7 @@ export default function EmailEntry({ onNext }) {
                     style={{
                       background: "none",
                       border: "none",
-                      color: "#C0392B",
+                      color: "#E31E24",
                       fontWeight: "500",
                       fontSize: "13px",
                       cursor: "pointer",
@@ -263,7 +263,7 @@ export default function EmailEntry({ onNext }) {
                 <i
                   className="ti ti-edit"
                   style={{
-                    color: "#C0392B",
+                    color: "#E31E24",
                     fontSize: "16px",
                     marginTop: "1px",
                     flexShrink: 0,
@@ -274,7 +274,7 @@ export default function EmailEntry({ onNext }) {
                   <a
                     href="/kyc-update"
                     style={{
-                      color: "#C0392B",
+                      color: "#E31E24",
                       fontWeight: "500",
                       fontSize: "13px",
                       textDecoration: "underline",

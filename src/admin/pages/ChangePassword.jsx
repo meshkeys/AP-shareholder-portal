@@ -87,7 +87,7 @@ export default function ChangePassword({ agent, onDone }) {
             style={{
               width: "52px",
               height: "52px",
-              background: "#C0392B",
+              background: "#E31E24",
               borderRadius: "12px",
               display: "flex",
               alignItems: "center",

@@ -347,7 +347,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "#C0392B",
+              color: "#E31E24",
             }}
           >
             <i className="ti ti-x" style={{ fontSize: "14px" }} />
@@ -398,7 +398,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   style={{
                     fontSize: "20px",
                     fontWeight: "600",
-                    color: "#C0392B",
+                    color: "#E31E24",
                     fontFamily: "monospace",
                   }}
                 >
@@ -470,7 +470,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                 style={{
                   fontSize: "15px",
                   marginRight: "6px",
-                  color: "#C0392B",
+                  color: "#E31E24",
                 }}
               />
               Ticket timeline
@@ -502,7 +502,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   label: "Approved",
                   date: request.approved_at,
                   icon: "ti-badge-check",
-                  color: "#C0392B",
+                  color: "#E31E24",
                   done: !!request.approved_at,
                 },
               ].map((step, idx, arr) => (
@@ -681,7 +681,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                           type="button"
                           onClick={() => removeRegistrarCertRow(idx)}
                           disabled={savingRegistrarInfo}
-                          style={{ background: "none", border: "none", cursor: "pointer", color: "#C0392B", padding: "9px" }}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "#E31E24", padding: "9px" }}
                         >
                           <i className="ti ti-trash" style={{ fontSize: "16px" }} />
                         </button>
@@ -825,7 +825,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   >
                     <i
                       className="ti ti-file-description"
-                      style={{ fontSize: "18px", color: "#C0392B" }}
+                      style={{ fontSize: "18px", color: "#E31E24" }}
                     />
                     <div>
                       <p style={{ fontSize: "13px", fontWeight: "500" }}>
@@ -842,7 +842,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                     rel="noopener noreferrer"
                     style={{
                       fontSize: "12px",
-                      color: "#C0392B",
+                      color: "#E31E24",
                       fontWeight: "500",
                       textDecoration: "none",
                       display: "flex",
@@ -898,7 +898,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                 let dotColor = "#6b6b6b",
                   bgColor = "#f8f8f8";
                 if (isExternal) {
-                  dotColor = "#C0392B";
+                  dotColor = "#E31E24";
                   bgColor = "#fdf1f0";
                 } else if (isNote) {
                   dotColor = "#2255cc";
@@ -1093,7 +1093,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   style={{
                     fontSize: "15px",
                     marginRight: "6px",
-                    color: "#C0392B",
+                    color: "#E31E24",
                   }}
                 />
                 {request.assigned_to ? "Reassign request" : "Assign request"}
@@ -1155,7 +1155,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   style={{
                     fontSize: "15px",
                     marginRight: "6px",
-                    color: "#C0392B",
+                    color: "#E31E24",
                   }}
                 />
                 Update status
@@ -1268,9 +1268,9 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                               width: "15px",
                               height: "15px",
                               borderRadius: "3px",
-                              border: `2px solid ${flaggedItems.includes(item) ? "#C0392B" : "#d0d0d0"}`,
+                              border: `2px solid ${flaggedItems.includes(item) ? "#E31E24" : "#d0d0d0"}`,
                               background: flaggedItems.includes(item)
-                                ? "#C0392B"
+                                ? "#E31E24"
                                 : "transparent",
                               display: "flex",
                               alignItems: "center",
@@ -1289,7 +1289,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                             style={{
                               fontSize: "12px",
                               color: flaggedItems.includes(item)
-                                ? "#C0392B"
+                                ? "#E31E24"
                                 : "#6b6b6b",
                             }}
                           >
@@ -1573,7 +1573,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                 style={{
                   fontSize: "15px",
                   marginRight: "6px",
-                  color: "#C0392B",
+                  color: "#E31E24",
                 }}
               />
               Email notifications

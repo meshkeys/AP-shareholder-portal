@@ -22,7 +22,7 @@ const TYPE_COLORS = {
   kycUpdate: "#0077b6",
   addressUpdate: "#b36a00",
   signatureUpdate: "#1a7a40",
-  nubanChange: "#C0392B",
+  nubanChange: "#E31E24",
 };
 
 export default function Reports({ agent }) {
@@ -163,7 +163,7 @@ export default function Reports({ agent }) {
                 style={{
                   height: "100%",
                   width: max > 0 ? (item[valueKey] / max) * 100 + "%" : "0%",
-                  background: colorFn ? colorFn(item) : "#C0392B",
+                  background: colorFn ? colorFn(item) : "#E31E24",
                   borderRadius: "4px",
                   transition: "width 0.6s ease",
                 }}
@@ -591,13 +591,13 @@ export default function Reports({ agent }) {
             <SummaryCard
               label="Rejected"
               value={report.summary.rejected}
-              color="#C0392B"
+              color="#E31E24"
               icon="ti-circle-x"
             />
             <SummaryCard
               label="SLA breached"
               value={report.summary.slaBreached}
-              color="#C0392B"
+              color="#E31E24"
               icon="ti-alert-triangle"
             />
           </div>
@@ -640,7 +640,7 @@ export default function Reports({ agent }) {
                       ? "#1a7a40"
                       : report.slaComplianceRate >= 60
                         ? "#b36a00"
-                        : "#C0392B",
+                        : "#E31E24",
                   lineHeight: 1,
                   marginBottom: "8px",
                 }}
@@ -664,7 +664,7 @@ export default function Reports({ agent }) {
                         ? "#1a7a40"
                         : report.slaComplianceRate >= 60
                           ? "#b36a00"
-                          : "#C0392B",
+                          : "#E31E24",
                     borderRadius: "4px",
                   }}
                 />
@@ -742,7 +742,7 @@ export default function Reports({ agent }) {
                 }))}
                 labelKey="type"
                 valueKey="count"
-                colorFn={(item) => TYPE_COLORS[item.key] || "#C0392B"}
+                colorFn={(item) => TYPE_COLORS[item.key] || "#E31E24"}
               />
             </div>
 
@@ -835,7 +835,7 @@ export default function Reports({ agent }) {
                           <td
                             style={{
                               padding: "8px 10px",
-                              color: "#C0392B",
+                              color: "#E31E24",
                               fontWeight: "500",
                             }}
                           >
@@ -915,7 +915,7 @@ export default function Reports({ agent }) {
                             width: "100%",
                             height: height + "%",
                             minHeight: "4px",
-                            background: "#C0392B",
+                            background: "#E31E24",
                             borderRadius: "3px 3px 0 0",
                             opacity: 0.8,
                           }}

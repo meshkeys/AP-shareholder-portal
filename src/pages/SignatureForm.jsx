@@ -57,7 +57,7 @@ export default function SignatureForm({ profile, onNext, onBack }) {
           style={{
             fontSize: "11px",
             fontWeight: "500",
-            color: "#C0392B",
+            color: "#E31E24",
             letterSpacing: "0.6px",
             textTransform: "uppercase",
             marginBottom: "6px",
@@ -135,7 +135,7 @@ export default function SignatureForm({ profile, onNext, onBack }) {
               className={`ti ${files.oldSignature ? "ti-circle-check" : "ti-writing"}`}
               style={{
                 fontSize: "28px",
-                color: files.oldSignature ? "#1a7a40" : "#C0392B",
+                color: files.oldSignature ? "#1a7a40" : "#E31E24",
                 marginBottom: "8px",
                 display: "block",
               }}
@@ -186,7 +186,7 @@ export default function SignatureForm({ profile, onNext, onBack }) {
               className={`ti ${files.newSignature ? "ti-circle-check" : "ti-pencil"}`}
               style={{
                 fontSize: "28px",
-                color: files.newSignature ? "#1a7a40" : "#C0392B",
+                color: files.newSignature ? "#1a7a40" : "#E31E24",
                 marginBottom: "8px",
                 display: "block",
               }}

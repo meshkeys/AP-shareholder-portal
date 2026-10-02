@@ -337,7 +337,7 @@ export default function Settings({ agent }) {
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "#C0392B",
+              color: "#E31E24",
             }}
           >
             <i className="ti ti-x" style={{ fontSize: "14px" }} />
@@ -366,7 +366,7 @@ export default function Settings({ agent }) {
           >
             <i
               className="ti ti-settings"
-              style={{ fontSize: "16px", marginRight: "8px", color: "#C0392B" }}
+              style={{ fontSize: "16px", marginRight: "8px", color: "#E31E24" }}
             />
             System settings
           </h2>
@@ -622,7 +622,7 @@ export default function Settings({ agent }) {
                   style={{
                     fontSize: "16px",
                     marginRight: "8px",
-                    color: "#C0392B",
+                    color: "#E31E24",
                   }}
                 />
                 Escalation rules
@@ -869,9 +869,9 @@ export default function Settings({ agent }) {
                           width: "15px",
                           height: "15px",
                           borderRadius: "3px",
-                          border: `2px solid ${ruleForm[item.key] ? "#C0392B" : "#d0d0d0"}`,
+                          border: `2px solid ${ruleForm[item.key] ? "#E31E24" : "#d0d0d0"}`,
                           background: ruleForm[item.key]
-                            ? "#C0392B"
+                            ? "#E31E24"
                             : "transparent",
                           display: "flex",
                           alignItems: "center",
@@ -889,7 +889,7 @@ export default function Settings({ agent }) {
                       <span
                         style={{
                           fontSize: "13px",
-                          color: ruleForm[item.key] ? "#C0392B" : "#6b6b6b",
+                          color: ruleForm[item.key] ? "#E31E24" : "#6b6b6b",
                         }}
                       >
                         {item.label}
@@ -1036,7 +1036,7 @@ export default function Settings({ agent }) {
                         </span>
                       )}
                       {rule.final_trigger_hours && (
-                        <span style={{ fontSize: "12px", color: "#C0392B" }}>
+                        <span style={{ fontSize: "12px", color: "#E31E24" }}>
                           <i
                             className="ti ti-clock"
                             style={{ fontSize: "12px", marginRight: "3px" }}
@@ -1084,7 +1084,7 @@ export default function Settings({ agent }) {
                           borderRadius: "6px",
                           border: "1px solid #e8b4af",
                           background: "#fdf1f0",
-                          color: "#C0392B",
+                          color: "#E31E24",
                           cursor: "pointer",
                         }}
                       >
@@ -1131,7 +1131,7 @@ export default function Settings({ agent }) {
                   style={{
                     fontSize: "16px",
                     marginRight: "8px",
-                    color: "#C0392B",
+                    color: "#E31E24",
                   }}
                 />
                 Canned responses
@@ -1332,7 +1332,7 @@ export default function Settings({ agent }) {
                       }}
                     >
                       <span
-                        style={{ flex: 1, fontSize: "12px", color: "#C0392B" }}
+                        style={{ flex: 1, fontSize: "12px", color: "#E31E24" }}
                       >
                         {item}
                       </span>
@@ -1350,7 +1350,7 @@ export default function Settings({ agent }) {
                           background: "none",
                           border: "none",
                           cursor: "pointer",
-                          color: "#C0392B",
+                          color: "#E31E24",
                           padding: 0,
                         }}
                       >
@@ -1484,7 +1484,7 @@ export default function Settings({ agent }) {
                               borderRadius: "6px",
                               border: "1px solid #e8b4af",
                               background: "#fdf1f0",
-                              color: "#C0392B",
+                              color: "#E31E24",
                               cursor: "pointer",
                             }}
                           >

@@ -17,7 +17,7 @@ export default function UpdateTypeSelector({ onSelect, onBack }) {
           style={{
             fontSize: "11px",
             fontWeight: "500",
-            color: "#C0392B",
+            color: "#E31E24",
             letterSpacing: "0.6px",
             textTransform: "uppercase",
             marginBottom: "6px",
@@ -60,7 +60,7 @@ export default function UpdateTypeSelector({ onSelect, onBack }) {
                   gap: "14px",
                   padding: "14px 16px",
                   background: isSelected ? "#fdf1f0" : "#fafafa",
-                  border: `1.5px solid ${isSelected ? "#C0392B" : "#e8e8e8"}`,
+                  border: `1.5px solid ${isSelected ? "#E31E24" : "#e8e8e8"}`,
                   borderRadius: "8px",
                   cursor: "pointer",
                   textAlign: "left",
@@ -74,7 +74,7 @@ export default function UpdateTypeSelector({ onSelect, onBack }) {
                     width: "40px",
                     height: "40px",
                     borderRadius: "8px",
-                    background: isSelected ? "#C0392B" : "#f0f0f0",
+                    background: isSelected ? "#E31E24" : "#f0f0f0",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -97,7 +97,7 @@ export default function UpdateTypeSelector({ onSelect, onBack }) {
                     style={{
                       fontSize: "14px",
                       fontWeight: "500",
-                      color: isSelected ? "#C0392B" : "#1a1a1a",
+                      color: isSelected ? "#E31E24" : "#1a1a1a",
                       marginBottom: "2px",
                     }}
                   >
@@ -114,8 +114,8 @@ export default function UpdateTypeSelector({ onSelect, onBack }) {
                     width: "20px",
                     height: "20px",
                     borderRadius: "50%",
-                    border: `2px solid ${isSelected ? "#C0392B" : "#d0d0d0"}`,
-                    background: isSelected ? "#C0392B" : "transparent",
+                    border: `2px solid ${isSelected ? "#E31E24" : "#d0d0d0"}`,
+                    background: isSelected ? "#E31E24" : "transparent",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",

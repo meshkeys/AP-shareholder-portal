@@ -107,7 +107,7 @@ export default function UpdateForm({ profile, onSubmit, onBack }) {
         style={{
           fontSize: "11px",
           fontWeight: "500",
-          color: "#C0392B",
+          color: "#E31E24",
           letterSpacing: "0.6px",
           textTransform: "uppercase",
           marginBottom: "6px",
@@ -416,7 +416,7 @@ function DocUploadRow({ doc, file, onFile, disabled }) {
           className={`ti ${doc.icon}`}
           style={{
             fontSize: "20px",
-            color: "#C0392B",
+            color: "#E31E24",
             flexShrink: 0,
             marginTop: "2px",
           }}
@@ -482,7 +482,7 @@ function DocUploadRow({ doc, file, onFile, disabled }) {
             borderRadius: "6px",
             border: uploaded ? "1px solid #a8dfc0" : "1px solid #e8b4af",
             background: uploaded ? "#f0faf4" : "#fdf1f0",
-            color: uploaded ? "#1a7a40" : "#C0392B",
+            color: uploaded ? "#1a7a40" : "#E31E24",
             cursor: "pointer",
             whiteSpace: "nowrap",
           }}

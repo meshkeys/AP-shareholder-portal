@@ -195,7 +195,7 @@ export default function KYCStandalone() {
             >
               <i
                 className="ti ti-check"
-                style={{ fontSize: "30px", color: "#C0392B" }}
+                style={{ fontSize: "30px", color: "#E31E24" }}
               />
             </div>
             <h2 style={{ marginBottom: "8px" }}>KYC Update Submitted</h2>
@@ -233,7 +233,7 @@ export default function KYCStandalone() {
                   fontSize: "22px",
                   fontWeight: "500",
                   letterSpacing: "2px",
-                  color: "#C0392B",
+                  color: "#E31E24",
                 }}
               >
                 {refNumber}
@@ -257,7 +257,7 @@ export default function KYCStandalone() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "6px",
-                color: "#C0392B",
+                color: "#E31E24",
                 fontWeight: "500",
                 fontSize: "14px",
                 textDecoration: "none",
@@ -303,7 +303,7 @@ export default function KYCStandalone() {
             style={{
               fontSize: "11px",
               fontWeight: "500",
-              color: "#C0392B",
+              color: "#E31E24",
               letterSpacing: "0.6px",
               textTransform: "uppercase",
               marginBottom: "6px",
@@ -565,7 +565,7 @@ export default function KYCStandalone() {
                   className={`ti ${idFile ? "ti-circle-check" : "ti-id"}`}
                   style={{
                     fontSize: "28px",
-                    color: idFile ? "#1a7a40" : "#C0392B",
+                    color: idFile ? "#1a7a40" : "#E31E24",
                     marginBottom: "8px",
                     display: "block",
                   }}

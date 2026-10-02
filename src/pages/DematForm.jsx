@@ -269,7 +269,7 @@ export default function DematForm() {
                 margin: "0 auto 20px",
               }}
             >
-              <i className="ti ti-check" style={{ fontSize: "30px", color: "#C0392B" }} />
+              <i className="ti ti-check" style={{ fontSize: "30px", color: "#E31E24" }} />
             </div>
             <h2 style={{ marginBottom: "8px" }}>Dematerialization Request Submitted</h2>
             <div
@@ -284,7 +284,7 @@ export default function DematForm() {
               <p style={{ fontSize: "12px", color: "#6b6b6b", marginBottom: "4px" }}>
                 Reference number
               </p>
-              <p style={{ fontSize: "22px", fontWeight: "500", letterSpacing: "2px", color: "#C0392B" }}>
+              <p style={{ fontSize: "22px", fontWeight: "500", letterSpacing: "2px", color: "#E31E24" }}>
                 {refNumber}
               </p>
             </div>
@@ -297,7 +297,7 @@ export default function DematForm() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "6px",
-                color: "#C0392B",
+                color: "#E31E24",
                 fontWeight: "500",
                 fontSize: "14px",
                 textDecoration: "none",
@@ -320,7 +320,7 @@ export default function DematForm() {
             style={{
               fontSize: "11px",
               fontWeight: "500",
-              color: "#C0392B",
+              color: "#E31E24",
               letterSpacing: "0.6px",
               textTransform: "uppercase",
               marginBottom: "6px",
@@ -490,7 +490,7 @@ export default function DematForm() {
                         type="button"
                         onClick={() => removeCertificateRow(idx)}
                         disabled={loading}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: "#C0392B", padding: "9px" }}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: "#E31E24", padding: "9px" }}
                       >
                         <i className="ti ti-trash" style={{ fontSize: "16px" }} />
                       </button>
@@ -557,20 +557,26 @@ export default function DematForm() {
               </select>
             </div>
 
-            {selectedBroker && !selectedBroker.email && (
+            {selectedBroker && (
               <div className="field-group">
-                <label>Broker email (if you know it)</label>
-                <input
-                  type="email"
-                  value={brokerEmailOverride}
-                  onChange={(e) => setBrokerEmailOverride(e.target.value)}
-                  placeholder="We don't have one on file — leave blank if unsure"
-                  disabled={loading}
-                />
-                <p style={{ fontSize: "12px", color: "#b36a00", marginTop: "4px" }}>
-                  If left blank, you'll need to download your submitted request and deliver it to
-                  your broker yourself.
-                </p>
+                <label>Broker email</label>
+                {selectedBroker.email ? (
+                  <input type="email" value={selectedBroker.email} disabled />
+                ) : (
+                  <>
+                    <input
+                      type="email"
+                      value={brokerEmailOverride}
+                      onChange={(e) => setBrokerEmailOverride(e.target.value)}
+                      placeholder="We don't have one on file — enter it if you know it"
+                      disabled={loading}
+                    />
+                    <p style={{ fontSize: "12px", color: "#b36a00", marginTop: "4px" }}>
+                      If left blank, you'll need to download your submitted request and deliver it
+                      to your broker yourself.
+                    </p>
+                  </>
+                )}
               </div>
             )}
 
