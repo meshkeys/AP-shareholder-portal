@@ -93,7 +93,7 @@ export default function DocUpload({ doc, file, onFile, disabled }) {
         <input
           ref={inputRef}
           type="file"
-          accept=".pdf,.jpg,.jpeg,.png"
+          accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp"
           style={{ display: "none" }}
           onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
           disabled={disabled}

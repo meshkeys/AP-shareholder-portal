@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../components/Navbar";
 import DocUpload from "../components/DocUpload";
 import { BROKERS } from "../config/brokers";
@@ -84,6 +84,14 @@ export default function DematForm() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const errorRef = useRef(null);
+
+  // Scroll any new error into view — a shareholder attaching a document
+  // further down the form would otherwise never see a rejection reason
+  // that only appears in the banner at the top.
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [error]);
   const [submitted, setSubmitted] = useState(false);
   const [refNumber, setRefNumber] = useState("");
   const [brokerOutcome, setBrokerOutcome] = useState(null); // "sent" | "no-email" | "missing-info"
@@ -146,6 +154,7 @@ export default function DematForm() {
         return "Please provide a witness name and GSM number for the indemnity section.";
     }
     if (!passportPhoto) return "Please attach a recent passport photograph.";
+    if (!validId) return "Please attach a valid means of identification.";
     return "";
   }
 
@@ -204,10 +213,16 @@ export default function DematForm() {
       );
       filesToUpload.forEach(([, file]) => formData.append("files", file));
 
-      await fetch(`${API_URL}/api/uploads/documents`, {
+      const uploadRes = await fetch(`${API_URL}/api/uploads/documents`, {
         method: "POST",
         body: formData,
       });
+      if (!uploadRes.ok) {
+        const uploadData = await uploadRes.json().catch(() => ({}));
+        throw new Error(
+          `${uploadData.error || "We couldn't attach your documents."} Your request was saved as ${data.referenceNumber || referenceNumber} — please try attaching your documents again, or contact support with that reference number.`,
+        );
+      }
 
       // Decide what happens next, and tell the shareholder accordingly.
       if (certificatesMissing) {
@@ -338,7 +353,7 @@ export default function DematForm() {
           </p>
 
           {error && (
-            <div className="alert alert-error" style={{ marginBottom: "16px" }}>
+            <div ref={errorRef} className="alert alert-error" style={{ marginBottom: "16px" }}>
               <i className="ti ti-alert-circle" style={{ fontSize: "15px", flexShrink: 0, marginTop: "1px" }} />
               {error}
             </div>
@@ -638,7 +653,7 @@ export default function DematForm() {
               disabled={loading}
             />
             <DocUpload
-              doc={{ id: "validId", title: "Valid means of identification", note: "National ID, driver's licence, voter's card or international passport.", required: false }}
+              doc={{ id: "validId", title: "Valid means of identification", note: "NIN slip, national ID card, driver's licence, voter's card or international passport.", required: true }}
               file={validId}
               onFile={(file) => handleFileSelect(setValidId, file)}
               disabled={loading}

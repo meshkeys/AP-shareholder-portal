@@ -136,14 +136,17 @@ export default function KYCStandalone() {
         formData.append("documentTypes", JSON.stringify(typesToUpload));
         filesToUpload.forEach((file) => formData.append("files", file));
 
-        await fetch(`${API_URL}/api/uploads/documents`, {
+        const uploadRes = await fetch(`${API_URL}/api/uploads/documents`, {
           method: "POST",
           body: formData,
         });
+        if (!uploadRes.ok) {
+          const uploadData = await uploadRes.json().catch(() => ({}));
+          throw new Error(
+            `${uploadData.error || "We couldn't attach your documents."} Your request was saved as ${data.referenceNumber || referenceNumber} — please try attaching your documents again, or contact support with that reference number.`,
+          );
+        }
       }
-
-      setRefNumber(data.referenceNumber || referenceNumber);
-      setSubmitted(true);
 
       setRefNumber(data.referenceNumber || referenceNumber);
       setSubmitted(true);
@@ -543,7 +546,7 @@ export default function KYCStandalone() {
               <input
                 ref={idInputRef}
                 type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
+                accept=".pdf,.jpg,.jpeg,.png,.heic,.heif,.webp"
                 style={{ display: "none" }}
                 onChange={(e) =>
                   e.target.files?.[0] && setIdFile(e.target.files[0])
@@ -618,7 +621,7 @@ export default function KYCStandalone() {
               <input
                 ref={signatureInputRef}
                 type="file"
-                accept=".jpg,.jpeg,.png"
+                accept=".jpg,.jpeg,.png,.heic,.heif,.webp"
                 style={{ display: "none" }}
                 onChange={(e) =>
                   e.target.files?.[0] && setSignatureFile(e.target.files[0])

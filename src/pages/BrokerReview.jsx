@@ -81,7 +81,10 @@ export default function BrokerReview() {
         method: "POST",
         body: formData,
       });
-      if (!uploadRes.ok) throw new Error("Upload failed. Please try again.");
+      if (!uploadRes.ok) {
+        const uploadData = await uploadRes.json().catch(() => ({}));
+        throw new Error(uploadData.error || "Upload failed. Please try again.");
+      }
 
       const completeRes = await fetch(
         `${API_URL}/api/dematerialization/review/${requestId}/complete`,

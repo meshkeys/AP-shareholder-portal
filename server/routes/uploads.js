@@ -9,11 +9,26 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
   fileFilter: (req, file, cb) => {
-    const allowed = ["image/jpeg", "image/png", "application/pdf"];
-    if (allowed.includes(file.mimetype)) {
+    const allowed = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/heic",
+      "image/heif",
+      "application/pdf",
+    ];
+    if (
+      allowed.includes(file.mimetype) ||
+      // iOS/Android sometimes send HEIC/HEIF without a recognized mimetype
+      /\.(heic|heif)$/i.test(file.originalname)
+    ) {
       cb(null, true);
     } else {
-      cb(new Error("Only JPG, PNG and PDF files are allowed."));
+      cb(
+        new Error(
+          `"${file.originalname}" is a ${file.mimetype || "file type"} we can't accept. Please upload a JPG, PNG, WEBP, HEIC or PDF file.`,
+        ),
+      );
     }
   },
 });
@@ -21,7 +36,17 @@ const upload = multer({
 // ── POST /api/uploads/documents ───────────────────────────────────────────────
 // Upload documents for a request
 // Called by the shareholder portal after submission
-router.post("/documents", upload.array("files", 20), async (req, res) => {
+router.post("/documents", (req, res, next) => {
+  // multer/fileFilter errors are thrown before the route handler runs, so
+  // they'd otherwise fall through to the generic 500 handler and lose their
+  // specific, user-actionable message (e.g. which file/type was rejected).
+  upload.array("files", 20)(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || "Upload failed." });
+    }
+    next();
+  });
+}, async (req, res) => {
   const { requestId, documentTypes } = req.body;
 
   if (!requestId) {
