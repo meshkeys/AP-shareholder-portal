@@ -380,6 +380,14 @@ router.patch("/:id/status", authenticate, async (req, res) => {
           fileName: doc.file_name,
           fileUrl: doc.file_url,
         })),
+        // For dematerialization, the shareholder's and broker's sections are
+        // both captured on one page — link to it so the external system can
+        // view the completed form as a whole, not just the raw fields.
+        ...(request.request_type === "dematerialization"
+          ? {
+              completedFormUrl: `${process.env.FRONTEND_URL || ""}/broker-review?id=${request.id}`,
+            }
+          : {}),
       };
 
       const EXTERNAL_ENDPOINT = process.env.EXTERNAL_APP_ENDPOINT;
@@ -615,6 +623,11 @@ router.post("/:id/approve", authenticate, async (req, res) => {
         fileName: doc.file_name,
         fileUrl: doc.file_url,
       })),
+      ...(request.request_type === "dematerialization"
+        ? {
+            completedFormUrl: `${process.env.FRONTEND_URL || ""}/broker-review?id=${request.id}`,
+          }
+        : {}),
     };
 
     // Send to external app if endpoint is configured

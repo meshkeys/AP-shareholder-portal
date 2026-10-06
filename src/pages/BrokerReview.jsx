@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import DocUpload from "../components/DocUpload";
+import APLogo from "../assets/AP_LOGO.png";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -27,7 +28,7 @@ export default function BrokerReview() {
   const [signedForm, setSignedForm] = useState(null);
   const [signedFormPreview, setSignedFormPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
+  const [justCompleted, setJustCompleted] = useState(false);
 
   useEffect(() => {
     if (!signedForm) {
@@ -39,6 +40,14 @@ export default function BrokerReview() {
     return () => URL.revokeObjectURL(url);
   }, [signedForm]);
 
+  async function loadRequest() {
+    const res = await fetch(`${API_URL}/api/dematerialization/review/${requestId}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    setRequest(data.request);
+    setDocuments(data.documents || []);
+  }
+
   useEffect(() => {
     if (!requestId) {
       setError("No request specified.");
@@ -47,11 +56,7 @@ export default function BrokerReview() {
     }
     (async () => {
       try {
-        const res = await fetch(`${API_URL}/api/dematerialization/review/${requestId}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        setRequest(data.request);
-        setDocuments(data.documents || []);
+        await loadRequest();
       } catch (err) {
         setError(err.message || "Could not load this request.");
       } finally {
@@ -96,7 +101,11 @@ export default function BrokerReview() {
       );
       if (!completeRes.ok) throw new Error("Could not finalize submission.");
 
-      setDone(true);
+      // Refetch so the completed view below shows the document we just
+      // uploaded (and brokerReturnedAt) straight from the server — one
+      // source of truth instead of relying on local-only file state.
+      await loadRequest();
+      setJustCompleted(true);
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
     } finally {
@@ -133,64 +142,83 @@ export default function BrokerReview() {
   const certificates = fields.certificates || [];
   const passportPhoto = documents.find((d) => d.document_type === "passportPhoto");
   const signatureImage = documents.find((d) => d.document_type === "shareholderSignature");
+  const brokerSignedDoc = documents.find((d) => d.document_type === "brokerSignedForm");
   const otherDocuments = documents.filter(
-    (d) => d.document_type !== "passportPhoto" && d.document_type !== "shareholderSignature",
+    (d) =>
+      d.document_type !== "passportPhoto" &&
+      d.document_type !== "shareholderSignature" &&
+      d.document_type !== "brokerSignedForm",
   );
 
-  if (done) {
-    return (
-      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <Navbar />
-        <main style={{ flex: 1, padding: "32px 24px", maxWidth: "560px", margin: "0 auto", width: "100%" }}>
-          <div className="card" style={{ textAlign: "center" }}>
-            <div
-              style={{
-                width: "64px",
-                height: "64px",
-                background: "#f0faf4",
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                margin: "0 auto 20px",
-              }}
-            >
-              <i className="ti ti-check" style={{ fontSize: "30px", color: "#1a7a40" }} />
-            </div>
-            <h2 style={{ marginBottom: "8px" }}>Thank you</h2>
-            <p style={{ fontSize: "14px", color: "#6b6b6b", lineHeight: 1.6 }}>
-              Your signed and stamped form for <strong>{request.reference_number}</strong> has been
-              received and sent to Africa Prudential for final verification.
-            </p>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  // Once the broker has returned their signed/stamped copy (either just now,
+  // or on a later visit to this same link), this page becomes the record of
+  // the fully executed form — shareholder's part and broker's part together
+  // — which is what gets referenced when the request is sent on for final
+  // approval/processing via the external endpoint (not yet configured).
+  const isCompleted = justCompleted || !!fields.brokerReturnedAt;
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <Navbar />
       <main style={{ flex: 1, padding: "32px 24px", maxWidth: "720px", margin: "0 auto", width: "100%" }}>
-        <div className="card no-print" style={{ marginBottom: "16px" }}>
-          <p style={{ fontSize: "11px", fontWeight: "500", color: "#E31E24", letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: "6px" }}>
-            Dematerialization request — broker review
-          </p>
-          <h2 style={{ marginBottom: "8px" }}>Reference {request.reference_number}</h2>
-          <p style={{ fontSize: "14px", color: "#6b6b6b", lineHeight: 1.6 }}>
-            Your client, <strong>{request.shareholder_name}</strong>, has named you as their
-            stockbroker for this dematerialization request. Please review everything below for
-            accuracy, then print this page, apply your stamp and signature, and upload the signed
-            copy at the bottom of this page.
-          </p>
+        <div className="card">
+          <img src={APLogo} alt="Africa Prudential" style={{ height: "34px", width: "auto", marginBottom: "18px" }} />
+          <h1
+            style={{
+              fontSize: "22px",
+              fontWeight: "800",
+              color: "#E31E24",
+              letterSpacing: "0.01em",
+              marginBottom: "14px",
+              lineHeight: 1.2,
+            }}
+          >
+            FULL DEMATERIALIZATION FORM FOR MIGRATION
+          </h1>
+          <div
+            style={{
+              border: "1px solid #1a1a1a",
+              borderRadius: "4px",
+              padding: "8px 12px",
+              fontSize: "12px",
+              marginBottom: "14px",
+              lineHeight: 1.5,
+            }}
+          >
+            <strong>INSTRUCTION:</strong>{" "}
+            {isCompleted
+              ? "This form has been completed by both the shareholder and the stockbroker and is ready for Africa Prudential's final review."
+              : `Section "B" only applies if the shareholder's certificate(s) is/are misplaced, lost or destroyed.`}
+          </div>
+
+          {isCompleted ? (
+            <div
+              className="alert alert-success no-print"
+              style={{ marginBottom: 0 }}
+            >
+              <i className="ti ti-circle-check" style={{ fontSize: "15px", flexShrink: 0, marginTop: "1px" }} />
+              {justCompleted
+                ? "Thank you — your signed and stamped form has been received and sent to Africa Prudential for final verification."
+                : "This request's broker section has already been completed and returned."}
+            </div>
+          ) : (
+            <p style={{ fontSize: "13px", color: "#1a1a1a", lineHeight: 1.6 }}>
+              Your client, <strong>{request.shareholder_name}</strong>, has named you as their
+              stockbroker for reference <strong>{request.reference_number}</strong>. Please review
+              everything below for accuracy, then print this page, apply your stamp and signature,
+              and upload the signed copy at the bottom of this page.
+            </p>
+          )}
         </div>
 
         {error && (
-          <div className="alert alert-error no-print" style={{ marginBottom: "16px" }}>
+          <div className="alert alert-error no-print" style={{ margin: "16px 0" }}>
             <i className="ti ti-alert-circle" style={{ fontSize: "15px", flexShrink: 0 }} />
             {error}
           </div>
         )}
+
+        <div style={{ height: "16px" }} />
 
         <div className="card" style={{ marginBottom: "16px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "14px" }}>
@@ -318,36 +346,179 @@ export default function BrokerReview() {
             <Field label="Signed by (typed name)" value={fields.signatureName} />
           </div>
 
-          <p style={{ fontSize: "12px", fontWeight: "500", color: "#6b6b6b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
-            Supporting documents
-          </p>
-          {otherDocuments.length === 0 ? (
-            <p style={{ fontSize: "13px", color: "#6b6b6b" }}>No other documents attached.</p>
-          ) : (
-            otherDocuments.map((doc) => (
-              <a
-                key={doc.id}
-                href={doc.file_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontSize: "13px",
-                  color: "#E31E24",
-                  textDecoration: "none",
-                  marginBottom: "6px",
-                }}
-              >
-                <i className="ti ti-file-description" style={{ fontSize: "15px" }} />
-                {doc.document_type} — {doc.file_name}
-              </a>
-            ))
+          {otherDocuments.length > 0 && (
+            <>
+              <p style={{ fontSize: "12px", fontWeight: "500", color: "#6b6b6b", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "8px" }}>
+                Supporting documents
+              </p>
+              {otherDocuments.map((doc) => (
+                <a
+                  key={doc.id}
+                  href={doc.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontSize: "13px",
+                    color: "#E31E24",
+                    textDecoration: "none",
+                    marginBottom: "6px",
+                  }}
+                >
+                  <i className="ti ti-file-description" style={{ fontSize: "15px" }} />
+                  {doc.document_type} — {doc.file_name}
+                </a>
+              ))}
+            </>
           )}
         </div>
 
-        <div className="no-print" style={{ marginBottom: "16px" }}>
+        {/* Broker stamp and signature / seal */}
+        <div className="card" style={{ marginBottom: "16px" }}>
+          <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px" }}>
+            Broker stamp and signature / seal
+          </h3>
+
+          {isCompleted ? (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: brokerSignedDoc ? "8px" : 0 }}>
+                <div
+                  style={{
+                    width: "220px",
+                    minHeight: "120px",
+                    flexShrink: 0,
+                    border: "1px solid #a8dfc0",
+                    borderRadius: "6px",
+                    background: "#f0faf4",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    padding: brokerSignedDoc ? 0 : "12px",
+                  }}
+                >
+                  {brokerSignedDoc ? (
+                    brokerSignedDoc.file_name?.match(/\.(pdf)$/i) ? (
+                      <div style={{ textAlign: "center", padding: "16px" }}>
+                        <i className="ti ti-file-check" style={{ fontSize: "26px", color: "#1a7a40", display: "block", marginBottom: "6px" }} />
+                        <p style={{ fontSize: "12px", color: "#1a7a40", fontWeight: "500" }}>{brokerSignedDoc.file_name}</p>
+                      </div>
+                    ) : (
+                      <img
+                        src={brokerSignedDoc.file_url}
+                        alt="Broker stamp and signature"
+                        style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                      />
+                    )
+                  ) : (
+                    <p style={{ fontSize: "12px", color: "#1a7a40" }}>Completed — document on file</p>
+                  )}
+                </div>
+                <Field
+                  label="Returned"
+                  value={
+                    fields.brokerReturnedAt
+                      ? new Date(fields.brokerReturnedAt).toLocaleString("en-GB")
+                      : "Just now"
+                  }
+                />
+              </div>
+              {brokerSignedDoc && (
+                <a
+                  href={brokerSignedDoc.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="no-print"
+                  style={{ fontSize: "12px", color: "#E31E24", textDecoration: "none" }}
+                >
+                  <i className="ti ti-external-link" style={{ fontSize: "12px", marginRight: "4px" }} />
+                  View full-size
+                </a>
+              )}
+            </>
+          ) : (
+            <>
+              <p style={{ fontSize: "12px", color: "#6b6b6b", marginBottom: "14px", lineHeight: 1.6 }}>
+                Print this form, apply your authorized signature(s) and company stamp/seal below,
+                then scan or photograph the completed page and upload it here to return it to us.
+              </p>
+
+              <div
+                style={{
+                  border: `1.5px dashed ${signedForm ? "#a8dfc0" : "#e8b4af"}`,
+                  borderRadius: "8px",
+                  padding: signedForm ? "12px" : "28px 16px",
+                  textAlign: "center",
+                  background: signedForm ? "#f0faf4" : "#fdf1f0",
+                  marginBottom: "14px",
+                }}
+              >
+                {signedForm ? (
+                  signedForm.type.startsWith("image/") ? (
+                    <img
+                      src={signedFormPreview}
+                      alt="Broker stamp and signature preview"
+                      style={{ maxWidth: "100%", maxHeight: "220px", borderRadius: "4px" }}
+                    />
+                  ) : (
+                    <>
+                      <i className="ti ti-file-check" style={{ fontSize: "26px", color: "#1a7a40", display: "block", marginBottom: "6px" }} />
+                      <p style={{ fontSize: "13px", color: "#1a7a40", fontWeight: "500" }}>{signedForm.name}</p>
+                    </>
+                  )
+                ) : (
+                  <>
+                    <i className="ti ti-writing-sign" style={{ fontSize: "26px", color: "#E31E24", display: "block", marginBottom: "6px" }} />
+                    <p style={{ fontSize: "13px", color: "#E31E24", fontWeight: "500" }}>
+                      Awaiting broker stamp &amp; signature
+                    </p>
+                    <p style={{ fontSize: "12px", color: "#6b6b6b", marginTop: "2px" }}>
+                      Attach your scanned/photographed page below
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <DocUpload
+                doc={{ id: "brokerSignedForm", title: "Signed & stamped form", note: "Clear scan or photo of the completed, stamped document.", required: true }}
+                file={signedForm}
+                onFile={setSignedForm}
+                disabled={submitting}
+              />
+
+              <div className="field-group" style={{ marginTop: "14px" }}>
+                <label>Your name *</label>
+                <input
+                  type="text"
+                  value={brokerContactName}
+                  onChange={(e) => setBrokerContactName(e.target.value)}
+                  disabled={submitting}
+                />
+              </div>
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ marginTop: "12px" }}
+                onClick={handleComplete}
+                disabled={submitting}
+              >
+                {submitting ? (
+                  <>
+                    <span className="spinner" /> Submitting...
+                  </>
+                ) : (
+                  <>
+                    <i className="ti ti-send" style={{ fontSize: "15px" }} /> Return to Africa Prudential
+                  </>
+                )}
+              </button>
+            </>
+          )}
+        </div>
+
+        <div className="no-print">
           <button
             type="button"
             className="btn-ghost"
@@ -355,86 +526,6 @@ export default function BrokerReview() {
             style={{ width: "auto", padding: "9px 16px" }}
           >
             <i className="ti ti-printer" style={{ fontSize: "15px" }} /> Print / Save as PDF
-          </button>
-        </div>
-
-        <div className="card no-print">
-          <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px" }}>
-            Broker stamp and signature / seal
-          </h3>
-          <p style={{ fontSize: "12px", color: "#6b6b6b", marginBottom: "14px", lineHeight: 1.6 }}>
-            Print this form, apply your authorized signature(s) and company stamp/seal below, then
-            scan or photograph the completed page and upload it here to return it to us.
-          </p>
-
-          <div
-            style={{
-              border: `1.5px dashed ${signedForm ? "#a8dfc0" : "#e8b4af"}`,
-              borderRadius: "8px",
-              padding: signedForm ? "12px" : "28px 16px",
-              textAlign: "center",
-              background: signedForm ? "#f0faf4" : "#fdf1f0",
-              marginBottom: "14px",
-            }}
-          >
-            {signedForm ? (
-              signedForm.type.startsWith("image/") ? (
-                <img
-                  src={signedFormPreview}
-                  alt="Broker stamp and signature preview"
-                  style={{ maxWidth: "100%", maxHeight: "220px", borderRadius: "4px" }}
-                />
-              ) : (
-                <>
-                  <i className="ti ti-file-check" style={{ fontSize: "26px", color: "#1a7a40", display: "block", marginBottom: "6px" }} />
-                  <p style={{ fontSize: "13px", color: "#1a7a40", fontWeight: "500" }}>{signedForm.name}</p>
-                </>
-              )
-            ) : (
-              <>
-                <i className="ti ti-writing-sign" style={{ fontSize: "26px", color: "#E31E24", display: "block", marginBottom: "6px" }} />
-                <p style={{ fontSize: "13px", color: "#E31E24", fontWeight: "500" }}>
-                  Awaiting broker stamp &amp; signature
-                </p>
-                <p style={{ fontSize: "12px", color: "#6b6b6b", marginTop: "2px" }}>
-                  Attach your scanned/photographed page below
-                </p>
-              </>
-            )}
-          </div>
-
-          <DocUpload
-            doc={{ id: "brokerSignedForm", title: "Signed & stamped form", note: "Clear scan or photo of the completed, stamped document.", required: true }}
-            file={signedForm}
-            onFile={setSignedForm}
-            disabled={submitting}
-          />
-
-          <div className="field-group" style={{ marginTop: "14px" }}>
-            <label>Your name *</label>
-            <input
-              type="text"
-              value={brokerContactName}
-              onChange={(e) => setBrokerContactName(e.target.value)}
-              disabled={submitting}
-            />
-          </div>
-          <button
-            type="button"
-            className="btn-primary"
-            style={{ marginTop: "12px" }}
-            onClick={handleComplete}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <>
-                <span className="spinner" /> Submitting...
-              </>
-            ) : (
-              <>
-                <i className="ti ti-send" style={{ fontSize: "15px" }} /> Return to Africa Prudential
-              </>
-            )}
           </button>
         </div>
       </main>

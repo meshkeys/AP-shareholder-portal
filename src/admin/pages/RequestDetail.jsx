@@ -817,25 +817,47 @@ export default function RequestDetail({ agent, requestId, onBack, onNavigate }) 
 
               {/* Resend to broker — only when certificates already exist and it's either unsent or needs resending */}
               {request.fields?.certificates?.length > 0 && (
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  style={{ width: "auto", padding: "8px 16px", fontSize: "13px" }}
-                  onClick={handleSendToBroker}
-                  disabled={sendingToBroker || !request.fields?.brokerEmail}
-                  title={!request.fields?.brokerEmail ? "No broker email on file" : undefined}
-                >
-                  {sendingToBroker ? (
-                    <>
-                      <span className="spinner spinner-dark" /> Sending...
-                    </>
-                  ) : (
-                    <>
-                      <i className="ti ti-mail-forward" style={{ fontSize: "14px" }} />{" "}
-                      {request.fields?.brokerSentAt ? "Resend to broker" : "Send to broker"}
-                    </>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    style={{ width: "auto", padding: "8px 16px", fontSize: "13px" }}
+                    onClick={handleSendToBroker}
+                    disabled={sendingToBroker || !request.fields?.brokerEmail}
+                    title={!request.fields?.brokerEmail ? "No broker email on file" : undefined}
+                  >
+                    {sendingToBroker ? (
+                      <>
+                        <span className="spinner spinner-dark" /> Sending...
+                      </>
+                    ) : (
+                      <>
+                        <i className="ti ti-mail-forward" style={{ fontSize: "14px" }} />{" "}
+                        {request.fields?.brokerSentAt ? "Resend to broker" : "Send to broker"}
+                      </>
+                    )}
+                  </button>
+                  {request.fields?.brokerSentAt && (
+                    <a
+                      href={`${window.location.origin}/broker-review?id=${request.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-ghost"
+                      style={{
+                        width: "auto",
+                        padding: "8px 16px",
+                        fontSize: "13px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        textDecoration: "none",
+                      }}
+                    >
+                      <i className="ti ti-file-text" style={{ fontSize: "14px" }} />
+                      {request.fields?.brokerReturnedAt ? "View completed form" : "View form as broker sees it"}
+                    </a>
                   )}
-                </button>
+                </div>
               )}
             </div>
           )}
