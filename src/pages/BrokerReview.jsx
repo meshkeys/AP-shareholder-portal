@@ -25,8 +25,19 @@ export default function BrokerReview() {
 
   const [brokerContactName, setBrokerContactName] = useState("");
   const [signedForm, setSignedForm] = useState(null);
+  const [signedFormPreview, setSignedFormPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    if (!signedForm) {
+      setSignedFormPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(signedForm);
+    setSignedFormPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [signedForm]);
 
   useEffect(() => {
     if (!requestId) {
@@ -344,13 +355,57 @@ export default function BrokerReview() {
 
         <div className="card no-print">
           <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "8px" }}>
-            Upload your signed &amp; stamped form
+            Broker stamp and signature / seal
           </h3>
           <p style={{ fontSize: "12px", color: "#6b6b6b", marginBottom: "14px", lineHeight: 1.6 }}>
-            After printing, applying your authorized signature(s) and stamp, scan or photograph the
-            completed page and upload it here to return it to us.
+            Print this form, apply your authorized signature(s) and company stamp/seal below, then
+            scan or photograph the completed page and upload it here to return it to us.
           </p>
-          <div className="field-group">
+
+          <div
+            style={{
+              border: `1.5px dashed ${signedForm ? "#a8dfc0" : "#e8b4af"}`,
+              borderRadius: "8px",
+              padding: signedForm ? "12px" : "28px 16px",
+              textAlign: "center",
+              background: signedForm ? "#f0faf4" : "#fdf1f0",
+              marginBottom: "14px",
+            }}
+          >
+            {signedForm ? (
+              signedForm.type.startsWith("image/") ? (
+                <img
+                  src={signedFormPreview}
+                  alt="Broker stamp and signature preview"
+                  style={{ maxWidth: "100%", maxHeight: "220px", borderRadius: "4px" }}
+                />
+              ) : (
+                <>
+                  <i className="ti ti-file-check" style={{ fontSize: "26px", color: "#1a7a40", display: "block", marginBottom: "6px" }} />
+                  <p style={{ fontSize: "13px", color: "#1a7a40", fontWeight: "500" }}>{signedForm.name}</p>
+                </>
+              )
+            ) : (
+              <>
+                <i className="ti ti-writing-sign" style={{ fontSize: "26px", color: "#E31E24", display: "block", marginBottom: "6px" }} />
+                <p style={{ fontSize: "13px", color: "#E31E24", fontWeight: "500" }}>
+                  Awaiting broker stamp &amp; signature
+                </p>
+                <p style={{ fontSize: "12px", color: "#6b6b6b", marginTop: "2px" }}>
+                  Attach your scanned/photographed page below
+                </p>
+              </>
+            )}
+          </div>
+
+          <DocUpload
+            doc={{ id: "brokerSignedForm", title: "Signed & stamped form", note: "Clear scan or photo of the completed, stamped document.", required: true }}
+            file={signedForm}
+            onFile={setSignedForm}
+            disabled={submitting}
+          />
+
+          <div className="field-group" style={{ marginTop: "14px" }}>
             <label>Your name *</label>
             <input
               type="text"
@@ -359,12 +414,6 @@ export default function BrokerReview() {
               disabled={submitting}
             />
           </div>
-          <DocUpload
-            doc={{ id: "brokerSignedForm", title: "Signed & stamped form", note: "Clear scan or photo of the completed, stamped document.", required: true }}
-            file={signedForm}
-            onFile={setSignedForm}
-            disabled={submitting}
-          />
           <button
             type="button"
             className="btn-primary"

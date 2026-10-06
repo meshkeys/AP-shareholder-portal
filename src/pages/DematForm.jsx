@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import DocUpload from "../components/DocUpload";
 import { BROKERS } from "../config/brokers";
+import { NIGERIAN_BANKS } from "../config/nigerianBanks";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
@@ -79,6 +80,7 @@ export default function DematForm() {
   const [passportPhoto, setPassportPhoto] = useState(null);
   const [validId, setValidId] = useState(null);
   const [signatureFile, setSignatureFile] = useState(null);
+  const [bankIsOther, setBankIsOther] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -404,7 +406,37 @@ export default function DematForm() {
               </div>
               <div className="field-group">
                 <label>Bank *</label>
-                <input type="text" value={fields.bankName} onChange={(e) => handleField("bankName", e.target.value)} disabled={loading} />
+                <select
+                  value={bankIsOther ? "Other (not listed)" : fields.bankName}
+                  onChange={(e) => {
+                    const isOther = e.target.value === "Other (not listed)";
+                    setBankIsOther(isOther);
+                    handleField("bankName", isOther ? "" : e.target.value);
+                  }}
+                  style={inputStyle}
+                  disabled={loading}
+                >
+                  <option value="">— Select your bank —</option>
+                  {NIGERIAN_BANKS.map((group) => (
+                    <optgroup key={group.group} label={group.group}>
+                      {group.banks.map((bank) => (
+                        <option key={bank} value={bank}>
+                          {bank}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+                {bankIsOther && (
+                  <input
+                    type="text"
+                    value={fields.bankName}
+                    onChange={(e) => handleField("bankName", e.target.value)}
+                    placeholder="Enter your bank's name"
+                    style={{ marginTop: "8px" }}
+                    disabled={loading}
+                  />
+                )}
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
