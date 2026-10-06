@@ -742,8 +742,153 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             </div>
           )}
 
+          {/* Dematerialization — full form view (shareholder details, bank details, signature) */}
+          {request.request_type === "dematerialization" && (() => {
+            const f = request.fields || {};
+            const passportPhoto = documents.find((d) => d.document_type === "passportPhoto");
+            const signatureImage = documents.find((d) => d.document_type === "shareholderSignature");
+            return (
+              <>
+                <div
+                  style={{
+                    background: "var(--admin-card)",
+                    border: "1px solid var(--admin-card-border)",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: "16px", marginBottom: "14px" }}>
+                    <h3 style={{ fontSize: "14px", fontWeight: "500" }}>Shareholder details</h3>
+                    <div
+                      style={{
+                        width: "90px",
+                        height: "110px",
+                        flexShrink: 0,
+                        border: "1px solid var(--admin-card-border)",
+                        borderRadius: "6px",
+                        overflow: "hidden",
+                        background: "#fafafa",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {passportPhoto ? (
+                        <img
+                          src={passportPhoto.file_url}
+                          alt="Shareholder passport photograph"
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        />
+                      ) : (
+                        <p style={{ fontSize: "10px", color: "#b0b0b0", textAlign: "center", padding: "6px" }}>
+                          No photo attached
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                    <InfoItem label="Full name" value={f.fullName || "—"} />
+                    <InfoItem label="Address" value={f.address || "—"} />
+                    <InfoItem label="GSM number" value={f.gsm || "—"} />
+                    <InfoItem label="Email" value={f.email || "—"} />
+                    <InfoItem label="CSCS Investor's A/C No." value={f.cscsAccountNo || "—"} />
+                    <InfoItem label="Clearing House No. (CHN)" value={f.chn || "—"} />
+                    <InfoItem label="Registrar's ID No. (RIN)" value={f.rin || "—"} />
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    background: "var(--admin-card)",
+                    border: "1px solid var(--admin-card-border)",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "14px" }}>
+                    Bank details for direct settlement
+                  </h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                    <InfoItem label="Account name" value={f.accountName || "—"} />
+                    <InfoItem label="Bank" value={f.bankName || "—"} />
+                    <InfoItem label="Bank A/C number (NUBAN)" value={f.bankAccountNo || "—"} />
+                    <InfoItem label="BVN" value={f.bvn || "—"} />
+                    <InfoItem label="Age of A/C" value={f.ageOfAccount || "—"} />
+                  </div>
+                </div>
+
+                {f.witnessName && (
+                  <div
+                    style={{
+                      background: "var(--admin-card)",
+                      border: "1px solid var(--admin-card-border)",
+                      borderRadius: "12px",
+                      padding: "20px",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                    }}
+                  >
+                    <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "14px" }}>
+                      Witness / guarantor (certificates missing)
+                    </h3>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                      <InfoItem label="Witness name" value={f.witnessName || "—"} />
+                      <InfoItem label="Witness GSM number" value={f.witnessGsm || "—"} />
+                      <InfoItem label="Witness address" value={f.witnessAddress || "—"} />
+                    </div>
+                  </div>
+                )}
+
+                <div
+                  style={{
+                    background: "var(--admin-card)",
+                    border: "1px solid var(--admin-card-border)",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+                  }}
+                >
+                  <h3 style={{ fontSize: "14px", fontWeight: "500", marginBottom: "14px" }}>
+                    Shareholder's signature
+                  </h3>
+                  <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                    <div
+                      style={{
+                        width: "160px",
+                        height: "70px",
+                        flexShrink: 0,
+                        border: "1px solid var(--admin-card-border)",
+                        borderRadius: "6px",
+                        background: "#fafafa",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {signatureImage ? (
+                        <img
+                          src={signatureImage.file_url}
+                          alt="Shareholder signature"
+                          style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+                        />
+                      ) : (
+                        <p style={{ fontFamily: "cursive, 'Brush Script MT', sans-serif", fontSize: "20px", color: "#1a1a1a" }}>
+                          {f.signatureName || "—"}
+                        </p>
+                      )}
+                    </div>
+                    <InfoItem label="Signed by (typed name)" value={f.signatureName || "—"} />
+                  </div>
+                </div>
+              </>
+            );
+          })()}
+
           {/* Requested changes */}
-          {request.fields && Object.keys(request.fields).length > 0 && (
+          {request.request_type !== "dematerialization" &&
+            request.fields && Object.keys(request.fields).length > 0 && (
             <div
               style={{
                 background: "var(--admin-card)",
@@ -779,6 +924,16 @@ export default function RequestDetail({ agent, requestId, onBack }) {
           )}
 
           {/* Documents */}
+          {(() => {
+            const visibleDocuments =
+              request.request_type === "dematerialization"
+                ? documents.filter(
+                    (d) =>
+                      d.document_type !== "passportPhoto" &&
+                      d.document_type !== "shareholderSignature",
+                  )
+                : documents;
+            return (
           <div
             style={{
               background: "var(--admin-card)",
@@ -795,14 +950,14 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                 marginBottom: "14px",
               }}
             >
-              Supporting documents ({documents.length})
+              Supporting documents ({visibleDocuments.length})
             </h3>
-            {documents.length === 0 ? (
+            {visibleDocuments.length === 0 ? (
               <p style={{ fontSize: "13px", color: "#6b6b6b" }}>
                 No documents attached.
               </p>
             ) : (
-              documents.map((doc) => (
+              visibleDocuments.map((doc) => (
                 <div
                   key={doc.id}
                   style={{
@@ -860,6 +1015,8 @@ export default function RequestDetail({ agent, requestId, onBack }) {
               ))
             )}
           </div>
+            );
+          })()}
 
           {/* Activity & Notes */}
           <div
