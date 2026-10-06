@@ -219,4 +219,39 @@ router.post("/review/:id/complete", async (req, res) => {
   }
 });
 
+// ── GET /api/dematerialization/batch/:batchId ──────────────────────────────────
+// A single shareholder submission can create several requests — one per
+// broker their holdings are split across (see DematForm.jsx). This returns
+// the sibling requests sharing a batchId so an agent reviewing one can see
+// the others from the same submission.
+router.get("/batch/:batchId", authenticate, async (req, res) => {
+  const { batchId } = req.params;
+  const { requestId } = req.query;
+
+  try {
+    const { data, error } = await supabase
+      .from("requests")
+      .select("id, reference_number, status, request_type, fields, created_at")
+      .eq("request_type", "dematerialization")
+      .eq("fields->>batchId", batchId)
+      .order("created_at", { ascending: true });
+
+    if (error) throw error;
+
+    const siblings = (data || [])
+      .filter((r) => r.id !== requestId)
+      .map((r) => ({
+        id: r.id,
+        referenceNumber: r.reference_number,
+        status: r.status,
+        brokerName: r.fields?.brokerName || null,
+      }));
+
+    res.json({ success: true, siblings });
+  } catch (err) {
+    console.error("Batch lookup error:", err);
+    res.status(500).json({ error: "Failed to fetch related requests." });
+  }
+});
+
 module.exports = router;

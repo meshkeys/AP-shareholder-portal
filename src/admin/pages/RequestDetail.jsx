@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { StatusBadge, TypeBadge } from "../components/StatusBadge";
+import { DEMAT_COMPANIES } from "../../config/dematCompanies";
 import {
   getRequestDetail,
   getAgents,
@@ -10,6 +11,7 @@ import {
   getCannedResponses,
   saveRegistrarCertificates,
   sendToBroker,
+  getDematBatch,
 } from "../services/adminApi";
 
 const STATUS_ACTIONS = {
@@ -34,7 +36,7 @@ const DEFAULT_MESSAGES = {
   closed: "Your request has been closed. Thank you for using ShareReg Portal.",
 };
 
-export default function RequestDetail({ agent, requestId, onBack }) {
+export default function RequestDetail({ agent, requestId, onBack, onNavigate }) {
   const [request, setRequest] = useState(null);
   const [documents, setDocuments] = useState([]);
   const [activity, setActivity] = useState([]);
@@ -70,10 +72,11 @@ export default function RequestDetail({ agent, requestId, onBack }) {
 
   // Dematerialization — registrar certificate fill-in
   const [registrarCertificates, setRegistrarCertificates] = useState([
-    { certificateNo: "", units: "" },
+    { company: "", certificateNo: "", units: "" },
   ]);
   const [savingRegistrarInfo, setSavingRegistrarInfo] = useState(false);
   const [sendingToBroker, setSendingToBroker] = useState(false);
+  const [batchSiblings, setBatchSiblings] = useState([]);
 
   useEffect(() => {
     loadData();
@@ -94,6 +97,21 @@ export default function RequestDetail({ agent, requestId, onBack }) {
         setCannedResponses(cannedRes.responses || []);
       } catch (e) {
         console.error("Canned responses failed:", e.message);
+      }
+
+      // A dematerialization submission can split into several requests —
+      // one per broker — so pull in any siblings from the same submission.
+      const batchId = res.request.fields?.batchId;
+      if (res.request.request_type === "dematerialization" && batchId) {
+        try {
+          const batchRes = await getDematBatch(batchId, requestId);
+          setBatchSiblings(batchRes.siblings || []);
+        } catch (e) {
+          console.error("Batch lookup failed:", e.message);
+          setBatchSiblings([]);
+        }
+      } else {
+        setBatchSiblings([]);
       }
 
       if (["admin", "supervisor", "lead_supervisor"].includes(agent.role)) {
@@ -203,7 +221,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
   function addRegistrarCertRow() {
     setRegistrarCertificates((prev) => [
       ...prev,
-      { certificateNo: "", units: "" },
+      { company: "", certificateNo: "", units: "" },
     ]);
   }
 
@@ -213,10 +231,10 @@ export default function RequestDetail({ agent, requestId, onBack }) {
 
   async function handleSaveRegistrarInfo() {
     const incomplete = registrarCertificates.some(
-      (c) => !c.certificateNo.trim() || !c.units.trim(),
+      (c) => !c.company.trim() || !c.certificateNo.trim() || !c.units.trim(),
     );
     if (incomplete) {
-      setError("Please fill in every certificate number and unit count.");
+      setError("Please select the company and fill in every certificate number and unit count.");
       return;
     }
     setSavingRegistrarInfo(true);
@@ -582,6 +600,52 @@ export default function RequestDetail({ agent, requestId, onBack }) {
             </div>
           </div>
 
+          {/* Dematerialization — related requests from the same submission */}
+          {request.request_type === "dematerialization" && batchSiblings.length > 0 && (
+            <div
+              style={{
+                background: "#f0f4ff",
+                border: "1px solid #c0d0f5",
+                borderRadius: "12px",
+                padding: "16px 20px",
+              }}
+            >
+              <p style={{ fontSize: "13px", fontWeight: "500", color: "#2255cc", marginBottom: "10px" }}>
+                <i className="ti ti-link" style={{ fontSize: "14px", marginRight: "6px" }} />
+                Part of a submission split across {batchSiblings.length + 1} brokers — {batchSiblings.length} other related request{batchSiblings.length > 1 ? "s" : ""}:
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                {batchSiblings.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => onNavigate?.("requestDetail", s.id)}
+                    disabled={!onNavigate}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: "10px",
+                      padding: "8px 10px",
+                      background: "#fff",
+                      border: "1px solid #c0d0f5",
+                      borderRadius: "6px",
+                      cursor: onNavigate ? "pointer" : "default",
+                      textAlign: "left",
+                      font: "inherit",
+                    }}
+                  >
+                    <span style={{ fontSize: "13px", fontFamily: "monospace", color: "#2255cc" }}>
+                      {s.referenceNumber}
+                    </span>
+                    <span style={{ fontSize: "12px", color: "#6b6b6b" }}>{s.brokerName || "—"}</span>
+                    <StatusBadge status={s.status} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Dematerialization — broker & certificate status */}
           {request.request_type === "dematerialization" && (
             <div
@@ -628,6 +692,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                   <table style={{ width: "100%", fontSize: "13px", borderCollapse: "collapse" }}>
                     <thead>
                       <tr style={{ textAlign: "left", color: "#6b6b6b" }}>
+                        <th style={{ padding: "6px 0" }}>Company</th>
                         <th style={{ padding: "6px 0" }}>Certificate No.</th>
                         <th style={{ padding: "6px 0" }}>Units</th>
                       </tr>
@@ -635,6 +700,7 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                     <tbody>
                       {request.fields.certificates.map((c, idx) => (
                         <tr key={idx} style={{ borderTop: "1px solid #f0f0f0" }}>
+                          <td style={{ padding: "6px 0" }}>{c.company || "—"}</td>
                           <td style={{ padding: "6px 0" }}>{c.certificateNo}</td>
                           <td style={{ padding: "6px 0" }}>{c.units}</td>
                         </tr>
@@ -657,35 +723,67 @@ export default function RequestDetail({ agent, requestId, onBack }) {
                     add them below — this will also send the request to the broker.
                   </p>
                   {registrarCertificates.map((cert, idx) => (
-                    <div key={idx} style={{ display: "flex", gap: "8px", marginBottom: "8px", alignItems: "flex-end" }}>
-                      <div className="field-group" style={{ flex: 1, marginBottom: 0 }}>
-                        <label>Certificate no.</label>
-                        <input
-                          type="text"
-                          value={cert.certificateNo}
-                          onChange={(e) => handleRegistrarCertChange(idx, "certificateNo", e.target.value)}
-                          disabled={savingRegistrarInfo}
-                        />
+                    <div
+                      key={idx}
+                      style={{
+                        border: "1px solid #e8e8e8",
+                        borderRadius: "8px",
+                        padding: "10px",
+                        marginBottom: "8px",
+                        background: "#fff",
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                        <p style={{ fontSize: "11px", fontWeight: "500", color: "#6b6b6b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                          Holding {idx + 1}
+                        </p>
+                        {registrarCertificates.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeRegistrarCertRow(idx)}
+                            disabled={savingRegistrarInfo}
+                            style={{ background: "none", border: "none", cursor: "pointer", color: "#E31E24", padding: "2px" }}
+                          >
+                            <i className="ti ti-trash" style={{ fontSize: "14px" }} />
+                          </button>
+                        )}
                       </div>
-                      <div className="field-group" style={{ flex: 1, marginBottom: 0 }}>
-                        <label>Units</label>
-                        <input
-                          type="text"
-                          value={cert.units}
-                          onChange={(e) => handleRegistrarCertChange(idx, "units", e.target.value.replace(/\D/g, ""))}
+                      <div className="field-group" style={{ marginBottom: "8px" }}>
+                        <label>Company</label>
+                        <select
+                          value={cert.company}
+                          onChange={(e) => handleRegistrarCertChange(idx, "company", e.target.value)}
+                          style={selectStyle}
                           disabled={savingRegistrarInfo}
-                        />
-                      </div>
-                      {registrarCertificates.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeRegistrarCertRow(idx)}
-                          disabled={savingRegistrarInfo}
-                          style={{ background: "none", border: "none", cursor: "pointer", color: "#E31E24", padding: "9px" }}
                         >
-                          <i className="ti ti-trash" style={{ fontSize: "16px" }} />
-                        </button>
-                      )}
+                          <option value="">— Select company —</option>
+                          {DEMAT_COMPANIES.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <div className="field-group" style={{ flex: 1, marginBottom: 0 }}>
+                          <label>Certificate no.</label>
+                          <input
+                            type="text"
+                            value={cert.certificateNo}
+                            onChange={(e) => handleRegistrarCertChange(idx, "certificateNo", e.target.value)}
+                            disabled={savingRegistrarInfo}
+                          />
+                        </div>
+                        <div className="field-group" style={{ flex: 1, marginBottom: 0 }}>
+                          <label>Units</label>
+                          <input
+                            type="text"
+                            value={cert.units}
+                            onChange={(e) => handleRegistrarCertChange(idx, "units", e.target.value.replace(/\D/g, ""))}
+                            disabled={savingRegistrarInfo}
+                          />
+                        </div>
+                      </div>
                     </div>
                   ))}
                   <button

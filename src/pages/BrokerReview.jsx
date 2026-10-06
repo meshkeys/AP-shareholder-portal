@@ -260,6 +260,7 @@ export default function BrokerReview() {
             <table style={{ width: "100%", fontSize: "13px", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ textAlign: "left", color: "#6b6b6b" }}>
+                  <th style={{ padding: "6px 0" }}>Company</th>
                   <th style={{ padding: "6px 0" }}>Certificate No.</th>
                   <th style={{ padding: "6px 0" }}>Units</th>
                 </tr>
@@ -267,6 +268,7 @@ export default function BrokerReview() {
               <tbody>
                 {certificates.map((c, idx) => (
                   <tr key={idx} style={{ borderTop: "1px solid #f0f0f0" }}>
+                    <td style={{ padding: "6px 0" }}>{c.company || "—"}</td>
                     <td style={{ padding: "6px 0" }}>{c.certificateNo}</td>
                     <td style={{ padding: "6px 0" }}>{c.units}</td>
                   </tr>

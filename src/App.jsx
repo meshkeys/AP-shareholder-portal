@@ -253,6 +253,7 @@ export default function App() {
               agent={adminAgent}
               requestId={selectedRequestId}
               onBack={() => setAdminPage("requests")}
+              onNavigate={handleAdminNavigate}
             />
           )}
           {adminPage === "performance" && (

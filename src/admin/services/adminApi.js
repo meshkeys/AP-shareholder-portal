@@ -407,3 +407,11 @@ export async function sendToBroker(requestId) {
   );
   return handleResponse(res);
 }
+
+export async function getDematBatch(batchId, requestId) {
+  const res = await fetch(
+    `${BASE_URL}/api/dematerialization/batch/${batchId}?requestId=${requestId}`,
+    { headers: getHeaders() },
+  );
+  return handleResponse(res);
+}

@@ -1,0 +1,46 @@
+/**
+ * Companies/funds a shareholder can select when listing which holdings
+ * they're dematerializing, for the dematerialization form's certificate
+ * rows. Source: list supplied by the team.
+ */
+
+export const DEMAT_COMPANIES = [
+  "Abbey Mortgage Bank Plc",
+  "Africa Prudential Plc",
+  "Afriland Properties Plc",
+  "Anchoria Equity Fund",
+  "Anchoria Fixed Income Fund",
+  "Anchoria Money Market Fund",
+  "Bricklinks Africa Plc",
+  "BUA Cement Plc",
+  "BUA Foods Plc",
+  "Cappa and D'Alberto Limited",
+  "CAP Plc",
+  "Central Securities Clearing System Plc",
+  "Champion Breweries Plc",
+  "Cordros Money Market Fund - IPO",
+  "Global Spectrum Energy Services Plc",
+  "Golden Capital Plc",
+  "Haldane McCall Nigeria Plc",
+  "Haldane McCall Plc",
+  "Infinity Trust Mortgage Bank Plc",
+  "Jaiz Bank Plc",
+  "Kebbi State Redeemable Bond",
+  "Lagos Building Investment Company Plc",
+  "LivingTrust Mortgage Bank Plc",
+  "Medview Airline Plc",
+  "Mixta Real Estate Plc",
+  "Resort Savings & Loans Limited",
+  "Roads Nigeria Plc",
+  "SCOA Nig. Plc",
+  "Transcorp Hotels Plc",
+  "Transcorp Power Plc",
+  "Transnational Corporation of Nigeria Plc",
+  "UAC of Nigeria Plc",
+  "UNIC Diversified Holdings Plc",
+  "United Bank for Africa Plc",
+  "United Capital Eurobond Fund - IPO",
+  "United Capital Plc",
+  "United Capital Wealth for Women Fund - IPO",
+  "VFD Group Plc",
+];
